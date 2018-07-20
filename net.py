@@ -19,31 +19,19 @@ data = DataGenerator()
 
 # Training Parameters
 learning_rate = 0.001
-num_steps = 100
+num_steps = 2000
 batch_size = 128
-display_step = 10
+display_step = 100
 
 # Network Parameters
-WIDTH = 128; HEIGHT = 128; CHANNELS = 1
-NUM_INPUTS = WIDTH * HEIGHT * CHANNELS
+WIDTH = data.WIDTH
+HEIGHT = data.HEIGHT
+CHANNELS = 1
 NUM_OUTPUTS = 1
 
 # Network Varibles and placeholders
 X = tf.placeholder(tf.float32, [None, HEIGHT, WIDTH, CHANNELS])  # Input
 Y = tf.placeholder(tf.float32, [None, NUM_OUTPUTS]) # Truth Data - Output
-
-def simple_net(x): 
-    # Reshape to match picture format [BatchSize, Height x Width x Channel] => [Batch Size, Height, Width, Channel]
-    x = tf.reshape(X, shape=[-1, HEIGHT, WIDTH, CHANNELS])
-    
-    # Reshape to fit to fully connected layer input
-    flatten = tf.contrib.layers.flatten(x)
-
-    # Fully-connected layers 
-    he_init = tf.contrib.layers.variance_scaling_initializer()
-    fc1 = tf.layers.dense(flatten, 128, activation=tf.nn.relu, kernel_initializer=he_init, name='fc1')   # First hidden layer with relu
-    out = tf.layers.dense(fc1, NUM_OUTPUTS,  activation=None, name='logits')  # this tf.layers.dense is same as tf.matmul(x, W) + b
-    return out
 
 # Network Architecture
 def network(x):
@@ -66,7 +54,7 @@ def network(x):
     return out
 
 # Define loss and optimizer 
-prediction = simple_net(X)
+prediction = network(X)
 loss = tf.reduce_mean(tf.square(prediction - Y))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 trainer = optimizer.minimize(loss)
@@ -82,11 +70,11 @@ print ('Start Training: BatchSize:', batch_size,' LearningRate:', learning_rate,
 _step = []
 _loss = []
 for step in range(num_steps):
-    batch_xs, _, batch_ys = data.next_batch(batch_size)
+    batch_xs, batch_ys = data.next_batch(batch_size)
     sess.run( trainer, feed_dict={X: batch_xs, Y: batch_ys} )
 
     if(step % display_step == 0):
-      loss_value = sess.run(loss, feed_dict={X: data.x_test, Y:data.angles_test})
+      loss_value = sess.run(loss, feed_dict={X: data.x_test, Y:data.y_test})
       _step.append(step)
       _loss.append(loss_value)
 
@@ -95,12 +83,12 @@ for step in range(num_steps):
 # Plot Accuracy 
 plt.plot(_step, np.log(_loss), label="test accuracy")
 plt.xlabel("Steps")
-plt.ylabel("Accuracy")
-plt.title("Accuracy for Angle Classification")
-plt.show()
+plt.ylabel("Loss")
+plt.title("Loss for Angle Estimatation")
+plt.show
 
 pred = sess.run(prediction, feed_dict={X: data.x_test})
 
-plt.plot(pred[0:100])
-plt.plot(data.angles_test[0:100])
+plt.plot(pred[0:4])
+plt.plot(data.y_test)
 plt.show()
