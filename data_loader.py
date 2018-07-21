@@ -24,6 +24,11 @@ class DataGenerator:
         self.HEIGHT = 196
         self.CHANNELS = 1
 
+        self.imagedir = 'data/images/'
+        #self.imagedir = 'data/images-small_set/'
+        
+        self.anglecsv = './data/FinalLinkedData.csv'
+
         print("Loading and formating image data ....")
         self.generate()
         print("Loading and formating image data: Complete")
@@ -31,29 +36,33 @@ class DataGenerator:
 
     def loadCSV(self):
         angle_dict = {}
-        with open('./data/FinalLinkedData.csv') as csvfile:
+        with open(self.anglecsv) as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 key = row['Current Standardized Name']
-                angle_dict[key] = [row['Alpha'], row['Beta']]
+                if row['Alpha'] != '' and row['Alpha'] != 'cm':
+                    alpha = float(row['Alpha'])
+                    beta = float(row['Beta'])
+                    angle_dict[key] = [alpha, beta]
         return angle_dict 
 
     def formatAngleData(self):
-        fdir = 'data/images/'
-        files = os.listdir(fdir)
+        files = os.listdir(self.imagedir)
 
+        files_with_angle = []
         angle_data = []
         for f in files:
-            angle_data.append(self.angle_dict[f])
+            if f in self.angle_dict:
+                angle_data.append(self.angle_dict[f])
+                files_with_angle.append(f)
 
-        return np.array(angle_data)
-
+        return np.array(angle_data), files_with_angle
+        
     def loadImageData(self):
-        fdir = 'data/images/'
-        files = os.listdir(fdir)
+        files = self.files
 
         for f in tqdm(files):
-            img = transform.resize(io.imread(fdir + f), (self.HEIGHT, self.WIDTH, COLOR_CHANNELS), mode='constant')
+            img = transform.resize(io.imread(self.imagedir + f), (self.HEIGHT, self.WIDTH, COLOR_CHANNELS), mode='constant')
             img = img[:,:,1]
 
             if f == files[0]:
@@ -66,8 +75,8 @@ class DataGenerator:
 
     def generate(self):
         self.angle_dict = self.loadCSV()
+        self.angle_data, self.files = self.formatAngleData() #np.zeros(self.image_data.shape[0])
         self.image_data = self.loadImageData()
-        self.angle_data = self.formatAngleData() #np.zeros(self.image_data.shape[0])
 
         # Grab alpha values:
         self.angle_data = np.reshape(self.angle_data[:,0], (-1, 1))
@@ -86,4 +95,6 @@ class DataGenerator:
 
 if __name__ == '__main__':
     data = DataGenerator()
-
+    print(data.y_train)
+    xs, ys = data.next_batch(128)
+    print(ys)
