@@ -15,17 +15,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import h5py
 
-from data_loader import DataGenerator
-from model import conv_network_1, conv_network_2, unet_like_network
+from ..data_loader import DataGenerator
+from .model import conv_network_1, conv_network_2, unet_like_network
 
 # Import Dataset
 data = DataGenerator()
 
 # Training Parameters
 learning_rate = 0.001
-num_steps = 100000 
-batch_size = 16 #128
-display_step = 100
+num_steps = 40000
+batch_size = 16 #16 #128
+display_step = 1000 #100
 
 # Network Parameters
 WIDTH = data.WIDTH
@@ -38,7 +38,7 @@ X = tf.placeholder(tf.float32, [None, HEIGHT, WIDTH, CHANNELS])  # Input
 Y = tf.placeholder(tf.float32, [None, NUM_OUTPUTS]) # Truth Data - Output
 
 # Define loss and optimizer 
-prediction = conv_network_2(X) 
+prediction = conv_network_2(X)  # unet_like_network(X)
 loss = tf.reduce_mean(tf.square(prediction - Y))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 trainer = optimizer.minimize(loss)
@@ -64,6 +64,7 @@ for step in range(num_steps):
     if(step % display_step == 0):
       train_loss = sess.run(loss, feed_dict={X: batch_xs, Y:batch_ys})  
       test_loss = sess.run(loss, feed_dict={X: data.x_test, Y:data.y_test})
+
       _step.append(step)
       _loss_train.append(train_loss)
       _loss_test.append(test_loss)
@@ -75,6 +76,13 @@ for step in range(num_steps):
 pred_train = sess.run(prediction, feed_dict={X: batch_xs})
 pred_test = sess.run(prediction, feed_dict={X: data.x_test})
 
+# Save data in h5py
+hf = h5py.File('results/data.h5', 'w')
+hf.create_dataset('x_test', data=data.x_test)
+hf.create_dataset('y_test', data=data.y_test)
+hf.create_dataset('results', data=pred_test)
+hf.close()
+
 # Plot Accuracy 
 plt.figure()
 plt.plot(_step, 10 * np.log(_loss_train), label="Training Accuracy")
@@ -85,6 +93,12 @@ plt.ylabel("Loss")
 plt.title("Loss for Angle Estimatation")
 plt.savefig('results/Loss.png')
 #plt.show()
+
+if(data.useWhitening):
+  batch_ys    = data.undo_whitening(batch_ys,    data.ang_mean, data.ang_std)
+  pred_train  = data.undo_whitening(pred_train,  data.ang_mean, data.ang_std)
+  data.y_test = data.undo_whitening(data.y_test, data.ang_mean, data.ang_std)
+  pred_test   = data.undo_whitening(pred_test,   data.ang_mean, data.ang_std)
 
 plt.figure()
 plt.plot(pred_train[:, 0], label="Predicted Values")
@@ -105,12 +119,3 @@ plt.ylabel("Loss")
 plt.title("Loss for Angle Estimatation - Test Data" )
 plt.savefig('results/Results.png')
 #plt.show()
-
-'''
-# Save data in h5py
-hf = h5py.File('data.h5', 'w')
-hf.create_dataset('x_test', data=data.x_test)
-hf.create_dataset('y_test', data=data.y_test)
-hf.create_dataset('results', data=pred)
-hf.close()
-'''

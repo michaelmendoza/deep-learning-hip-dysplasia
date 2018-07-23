@@ -1,3 +1,3 @@
 
 if __name__ == '__main__':
-   import estimator
+   import src.tf.estimator
