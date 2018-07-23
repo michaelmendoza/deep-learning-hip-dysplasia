@@ -24,19 +24,26 @@ class Stats:
 
 class DataGenerator:
 
-    def __init__(self):
-        self.useNormalization = False 
-        self.useWhitening = True
-        self.useRandomOrder = True
+    def __init__(self, 
+        imagedir = 'data/images/', 
+        anglecsv = './data/FinalLinkedData.csv', 
+        width = 196, 
+        height = 196, 
+        ratio = 0.8, 
+        useNormalization = False, 
+        useWhitening = True, 
+        useRandomOrder = True):
         
-        self.ratio = 0.8
-        self.WIDTH = 196 #128
-        self.HEIGHT = 196 #128
+        self.imagedir = imagedir
+        self.anglecsv = anglecsv
+        self.WIDTH = width
+        self.HEIGHT = height
         self.CHANNELS = 1
+        self.ratio = ratio
+        self.useNormalization = useNormalization
+        self.useWhitening = useWhitening
+        self.useRandomOrder = useRandomOrder
 
-        self.imagedir = 'data/images/'  # 'data/images-small_set/'
-        self.anglecsv = './data/FinalLinkedData.csv'
-        
         print("Loading and formating image data ....")
         self.generate()
         print("Loading and formating image data: Complete")
