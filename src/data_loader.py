@@ -28,7 +28,7 @@ class DataGenerator:
         self.useNormalization = False 
         self.useWhitening = True
         self.useRandomOrder = True
-
+        
         self.ratio = 0.8
         self.WIDTH = 196 #128
         self.HEIGHT = 196 #128
@@ -36,7 +36,7 @@ class DataGenerator:
 
         self.imagedir = 'data/images/'  # 'data/images-small_set/'
         self.anglecsv = './data/FinalLinkedData.csv'
-
+        
         print("Loading and formating image data ....")
         self.generate()
         print("Loading and formating image data: Complete")

@@ -23,9 +23,9 @@ data = DataGenerator()
 
 # Training Parameters
 learning_rate = 0.001
-num_steps = 40000
-batch_size = 16 #16 #128
-display_step = 1000 #100
+num_steps = 10000
+batch_size = 128 #16 #128
+display_step = 100 #100
 
 # Network Parameters
 WIDTH = data.WIDTH
@@ -38,7 +38,7 @@ X = tf.placeholder(tf.float32, [None, HEIGHT, WIDTH, CHANNELS])  # Input
 Y = tf.placeholder(tf.float32, [None, NUM_OUTPUTS]) # Truth Data - Output
 
 # Define loss and optimizer 
-prediction = conv_network_2(X)  # unet_like_network(X)
+prediction = conv_network_1(X)  # unet_like_network(X)
 loss = tf.reduce_mean(tf.square(prediction - Y))
 optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate)
 trainer = optimizer.minimize(loss)
