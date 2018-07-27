@@ -1,11 +1,8 @@
 
 import tensorflow as tf
 
-# Network Parameters
-NUM_OUTPUTS = 1
-
 # Network Architecture
-def conv_network_1(x):
+def conv_network_1(x, NUM_OUTPUTS = 1):
 
     # Convolutional layers and max pool
     he_init = tf.contrib.layers.variance_scaling_initializer()
@@ -22,7 +19,7 @@ def conv_network_1(x):
     out = tf.layers.dense(fc2,     NUM_OUTPUTS,  activation=None, name='logits')  
     return out
 
-def conv_network_2(x): 
+def conv_network_2(x, NUM_OUTPUTS = 1): 
     
     # Convolutional layers and max pool
     he_init = tf.contrib.layers.variance_scaling_initializer()
@@ -49,7 +46,7 @@ def conv_network_2(x):
     out = tf.layers.dense(fc2,     NUM_OUTPUTS,  activation=None, name='logits')  
     return out 
 
-def unet_like_network(x):
+def unet_like_network(x, NUM_OUTPUTS = 1):
     he_init = tf.contrib.layers.variance_scaling_initializer()
     conv1 = tf.layers.conv2d(x,     32, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv1')
     conv1 = tf.layers.conv2d(conv1, 32, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv1-2')

@@ -30,6 +30,8 @@ class DataGenerator:
         width = 196, 
         height = 196, 
         ratio = 0.8, 
+        useBinaryClassify = True,
+        binaryThreshold = 60.0,
         useNormalization = False, 
         useWhitening = True, 
         useRandomOrder = True):
@@ -40,6 +42,10 @@ class DataGenerator:
         self.HEIGHT = height
         self.CHANNELS = 1
         self.ratio = ratio
+
+        self.useBinaryClassify = useBinaryClassify
+        self.binaryThreshold = binaryThreshold
+
         self.useNormalization = useNormalization
         self.useWhitening = useWhitening
         self.useRandomOrder = useRandomOrder
@@ -108,18 +114,34 @@ class DataGenerator:
         # Data preprocessing
         if self.useNormalization:
             self.image_data, self.img_min, self.img_max = self.normalize(self.image_data)
-            self.angle_data, self.ang_min, self.ang_max = self.normalize(self.angle_data)
 
         if self.useWhitening:
             self.image_data, self.img_mean, self.img_std = self.whiten(self.image_data)
-            self.angle_data, self.ang_mean, self.ang_std = self.whiten(self.angle_data)
+
+        if self.useBinaryClassify:
+            self.angle_data = self.threshold(self.angle_data)
+        else:
+            if self.useNormalization:
+                self.angle_data, self.ang_min, self.ang_max = self.normalize(self.angle_data)
+            if self.useWhitening:
+                self.angle_data, self.ang_mean, self.ang_std = self.whiten(self.angle_data)
 
         # Split data into test/training sets 
         index = int(self.ratio * len(self.image_data)) # Split index
         self.x_train = self.image_data[0:index, :]
-        self.y_train = self.angle_data[0:index]
-        self.x_test = self.image_data[index:,:] 
-        self.y_test = self.angle_data[index:]
+        self.x_test = self.image_data[index:, :] 
+
+        if self.useBinaryClassify:
+            self.y_train = self.angle_data[0:index, :]
+            self.y_test = self.angle_data[index:, :]
+        else:
+            self.y_train = self.angle_data[0:index]
+            self.y_test = self.angle_data[index:]
+
+    def threshold(self, data): 
+        threshold = (data > self.binaryThreshold) * 1
+        onehot = np.concatenate( (1 - threshold, threshold), axis = 1)  # OneHot Encoding
+        return onehot
 
     def next_batch(self, batch_size):
         length = self.x_train.shape[0]
@@ -151,13 +173,18 @@ class DataGenerator:
 
 if __name__ == '__main__':
     data = DataGenerator()
-    xs, ys = data.next_batch(16)
-    print(ys)
+    xs, ys = data.next_batch(128)
 
-    plt.figure(1)
-    data.plot(1)
+    #plt.figure(1)
+    #data.plot(1)
 
-    plt.figure(2)
+    plt.figure()
+    plt.hist(ys)
+    plt.show()
+
+    plt.figure()
     plt.hist(data.y_train)
-    
+    plt.show()
+
+
     

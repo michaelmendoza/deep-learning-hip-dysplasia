@@ -18,7 +18,7 @@ import h5py
 from ..data_loader import DataGenerator
 from .model import conv_network_1, conv_network_2, unet_like_network
 
-class Estimator:
+class Classifier:
 
   def __init__(self,
     num_steps = 10000,
@@ -39,7 +39,7 @@ class Estimator:
     self.WIDTH = self.data.WIDTH
     self.HEIGHT = self.data.HEIGHT
     self.CHANNELS = 1
-    self.NUM_OUTPUTS = 1
+    self.NUM_OUTPUTS = 2
 
     self.initNetwork()
     self.train()
@@ -52,10 +52,16 @@ class Estimator:
     self.Y = tf.placeholder(tf.float32, [None, self.NUM_OUTPUTS]) # Truth Data - Output
 
     # Define loss and optimizer 
-    self.prediction = conv_network_1(self.X) 
-    self.loss = tf.reduce_mean(tf.square(self.prediction - self.Y))
+    self.logits = conv_network_1(self.X, self.NUM_OUTPUTS) 
+    self.prediction =  tf.nn.softmax(self.logits)
+
+    self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
     self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
     self.trainer = self.optimizer.minimize(self.loss)
+
+    # Evaluate model
+    self.correct_pred = tf.equal(tf.argmax(self.prediction, 1), tf.argmax(self.Y, 1))
+    self.accuracy = tf.reduce_mean(tf.cast(self.correct_pred, tf.float32))
 
     # Initalize varibles, and run network
     init = tf.global_variables_initializer()
@@ -74,6 +80,8 @@ class Estimator:
     _steps = []
     _loss_train = []
     _loss_test = []
+    _acc = []
+
     for step in range(self.num_steps):
         batch_xs, batch_ys = self.data.next_batch(self.batch_size)
         self.sess.run( self.trainer, feed_dict={self.X: batch_xs, self.Y: batch_ys} )
@@ -81,23 +89,26 @@ class Estimator:
         if(step % self.display_step == 0):
           train_loss = self.sess.run(self.loss, feed_dict={ self.X:batch_xs, self.Y: batch_ys })  
           test_loss = self.sess.run(self.loss, feed_dict={ self.X:self.data.x_test, self.Y:self.data.y_test })
-
+          acc = self.sess.run(self.accuracy, feed_dict={ self.X:self.data.x_test, self.Y:self.data.y_test })
+          
           _steps.append(step)
           _loss_train.append(train_loss)
           _loss_test.append(test_loss)
+          _acc.append(acc)
 
           time_elapsed = time.time() - start_time
-          print("Step: " + str(step) + " Train Loss: " + str(train_loss) + " Test Loss: " + str(test_loss) + " Time Elapsed: " + str(round(time_elapsed)) + " secs") 
+          print("Step: " + str(step) + " Train Loss: " + str(train_loss) + " Test Loss: " + str(test_loss) + " Test Accuracy: " + str(acc) +  " Time Elapsed: " + str(round(time_elapsed)) + " secs") 
 
     # Get prediction after network is trained
-    pred_train = self.sess.run(self.prediction, feed_dict={ self.X: batch_xs })
-    pred_test = self.sess.run(self.prediction, feed_dict={ self.X: self.data.x_test })
-
+    pred_train = self.sess.run(1 - tf.argmax(self.prediction, 1), feed_dict={ self.X: batch_xs })
+    pred_test = self.sess.run(1 - tf.argmax(self.prediction, 1), feed_dict={ self.X: self.data.x_test })
+    
     # Wrap results in results object
     self.results = lambda: None
     self.results.steps = _steps;
     self.results.loss_train = _loss_train
     self.results.loss_test = _loss_test
+    self.results.accuracy = _acc
     self.results.pred_train = pred_train
     self.results.pred_test = pred_test
     self.results.x_train = batch_xs
@@ -115,24 +126,30 @@ class Estimator:
     data = self.data
     results = self.results
 
-    # Plot Accuracy 
+    # Plot Loss
     plt.figure()
-    plt.plot(results.steps, 10 * np.log(results.loss_train), label="Training Loss")
-    plt.plot(results.steps, 10 * np.log(results.loss_test), label="Test Loss")
+    plt.plot(results.steps, results.loss_train, label="Training Loss")
+    plt.plot(results.steps, results.loss_test, label="Test Loss")
     plt.legend()
     plt.xlabel("Steps")
     plt.ylabel("Loss")
     plt.title("Loss for Angle Estimatation")
     plt.savefig('results/Loss.png')
 
-    if(data.useWhitening):
-      results.y_train     = data.undo_whitening(results.y_train,     data.ang_mean, data.ang_std)
-      results.pred_train  = data.undo_whitening(results.pred_train,  data.ang_mean, data.ang_std)
-      data.y_test         = data.undo_whitening(data.y_test,         data.ang_mean, data.ang_std)
-      results.pred_test   = data.undo_whitening(results.pred_test,   data.ang_mean, data.ang_std)
+    # Plot Accuracy
+    plt.figure() 
+    plt.plot(results.steps, results.accuracy, label="Training Accuracy")
+    plt.legend()
+    plt.xlabel("Steps")
+    plt.ylabel("Accuracy")
+    plt.title("Accuracy for Angle Estimatation")
+    plt.savefig('results/Accuracy.png')
+
+    print(results.pred_train.shape)
+    print(results.y_train.shape)
 
     plt.figure()
-    plt.plot(results.pred_train[:, 0], label="Predicted Values")
+    plt.plot(results.pred_train, label="Predicted Values")
     plt.plot(results.y_train[:, 0], label="Truth Values")
     plt.legend()
     plt.xlabel("Steps")
@@ -141,7 +158,7 @@ class Estimator:
     plt.savefig('results/Results-Training.png')
 
     plt.figure()
-    plt.plot(results.pred_test[:, 0], label="Predicted Values")
+    plt.plot(results.pred_test, label="Predicted Values")
     plt.plot(data.y_test[:, 0], label="Truth Values")
     plt.legend()
     plt.xlabel("Steps")
