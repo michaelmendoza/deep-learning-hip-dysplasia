@@ -96,6 +96,40 @@ def unet_like_network(x, NUM_OUTPUTS = 1):
     out = tf.layers.dense(fc2,     NUM_OUTPUTS,  activation=None, name='logits') 
     return out
 
+def VGG(x, NUM_OUTPUTS = 1):
+	he_init = tf.contrib.layers.variance_scaling_initializer()
+    conv1 = tf.layers.conv2d(x,     64, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv1')
+    conv1 = tf.layers.conv2d(conv1, 64, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv1-2')
+    pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[2, 2], strides=2)
+    
+    conv2 = tf.layers.conv2d(pool1, 128, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv2')
+    conv2 = tf.layers.conv2d(conv2, 128, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv2-2')
+    pool2 = tf.layers.max_pooling2d(inputs=conv2, pool_size=[2, 2], strides=2)
+
+    conv3 = tf.layers.conv2d(pool2, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3')
+    conv3 = tf.layers.conv2d(conv3, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3-2')
+    conv3 = tf.layers.conv2d(conv3, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3-3')
+    pool3 = tf.layers.max_pooling2d(inputs=conv3, pool_size=[2, 2], strides=2)    
+
+    conv4 = tf.layers.conv2d(pool3, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4')
+    conv4 = tf.layers.conv2d(conv4, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-2')
+    conv4 = tf.layers.conv2d(conv4, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-3')
+    pool4 = tf.layers.max_pooling2d(inputs=conv4, pool_size=[2, 2], strides=2) 
+
+    conv5 = tf.layers.conv2d(pool4, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv5')
+    conv5 = tf.layers.conv2d(conv5, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv5-2')
+    conv5 = tf.layers.conv2d(conv5, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv5-3')
+    pool5 = tf.layers.max_pooling2d(inputs=conv5, pool_size=[2, 2], strides=2)       
+
+    # Reshape to fit to fully connected layer input
+    flatten = tf.contrib.layers.flatten(pool5)
+
+    # Fully-connected layers 
+    fc1 = tf.layers.dense(flatten, 4096, activation=tf.nn.relu, kernel_initializer=he_init, name='fc1')  
+    fc2 = tf.layers.dense(fc1,     4096, activation=tf.nn.relu, kernel_initializer=he_init, name='fc2')
+    out = tf.layers.dense(fc2,     NUM_OUTPUTS,  activation=None, name='logits')  
+    return out 
+
 def resnet_34(x, NUM_OUTPUTS = 1):
 	he_init = tf.contrib.layers.variance_scaling_initializer()
 	conv1 = tf.layers.conv2d(x,     64, [7, 7], strides=2, padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv1')
