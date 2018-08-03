@@ -95,3 +95,74 @@ def unet_like_network(x, NUM_OUTPUTS = 1):
     fc2 = tf.layers.dense(fc1,     1024, activation=tf.nn.relu, kernel_initializer=he_init, name='fc2') 
     out = tf.layers.dense(fc2,     NUM_OUTPUTS,  activation=None, name='logits') 
     return out
+
+def resnet_34(x, NUM_OUTPUTS = 1):
+	he_init = tf.contrib.layers.variance_scaling_initializer()
+	conv1 = tf.layers.conv2d(x,     64, [7, 7], strides=2, padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv1')
+    pool1 = tf.layers.max_pooling2d(inputs=conv1, pool_size=[3, 3], strides=2)
+
+
+
+    conv2_1 = tf.layers.conv2d(pool1, 64, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv2-1')
+    conv2_1 = tf.layers.conv2d(conv2, 64, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv2-1-2')
+
+    conv2_2 = tf.layers.conv2d(conv2_1, 64, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv2-2')
+    conv2_2 = tf.layers.conv2d(conv2_2, 64, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv2-2-2')
+
+    conv2_3 = tf.layers.conv2d(conv2_2, 64, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv2-3')
+    conv2_3 = tf.layers.conv2d(conv2_3, 64, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv2-3-2')
+
+
+
+    conv3_1 = tf.layers.conv2d(conv2_3, 128, [3, 3], strides=2, padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3-1')
+    conv3_1 = tf.layers.conv2d(conv3_1, 128, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3-1-2')
+
+    conv3_2 = tf.layers.conv2d(conv3_1, 128, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3-2')
+    conv3_2 = tf.layers.conv2d(conv3_2, 128, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3-2-2')
+
+    conv3_3 = tf.layers.conv2d(conv3_2, 128, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3-3')
+    conv3_3 = tf.layers.conv2d(conv3_3, 128, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3-3-2')
+
+    conv3_4 = tf.layers.conv2d(conv3_3, 128, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3-4')
+    conv3_4 = tf.layers.conv2d(conv3_4, 128, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv3-4-2')
+
+
+
+    conv4_1 = tf.layers.conv2d(conv3_4, 256, [3, 3], strides=2, padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-1')
+    conv4_1 = tf.layers.conv2d(conv4_1, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-1-2')
+
+    conv4_2 = tf.layers.conv2d(conv4_1, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-2')
+    conv4_2 = tf.layers.conv2d(conv4_2, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-2-2')
+
+    conv4_3 = tf.layers.conv2d(conv4_2, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-3')
+    conv4_3 = tf.layers.conv2d(conv4_3, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-3-2')
+
+    conv4_4 = tf.layers.conv2d(conv4_3, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-4')
+    conv4_4 = tf.layers.conv2d(conv4_4, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-4-2')
+
+    conv4_5 = tf.layers.conv2d(conv4_4, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-5')
+    conv4_5 = tf.layers.conv2d(conv4_5, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-5-2')
+
+    conv4_6 = tf.layers.conv2d(conv4_5, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-6')
+    conv4_6 = tf.layers.conv2d(conv4_6, 256, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv4-6-2')
+
+
+
+    conv5_1 = tf.layers.conv2d(conv4_6, 512, [3, 3], strides=2, padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv5-1')
+    conv5_1 = tf.layers.conv2d(conv5_1, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv5-1-2')
+
+    conv5_2 = tf.layers.conv2d(conv5_1, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv5-2')
+    conv5_2 = tf.layers.conv2d(conv5_2, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv5-2-2')
+
+    conv5_3 = tf.layers.conv2d(conv5_2, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv5-3')
+    conv5_3 = tf.layers.conv2d(conv5_3, 512, [3, 3], padding="SAME", activation=tf.nn.relu, kernel_initializer=he_init, name='Conv5-3-2')
+
+
+
+    flatten = tf.contrib.layers.flatten(conv5_3) 
+
+    fc1 = tf.layers.dense(flatten, 1024, activation=tf.nn.relu, kernel_initializer=he_init, name='fc1') 
+    fc2 = tf.layers.dense(fc1,     1024, activation=tf.nn.relu, kernel_initializer=he_init, name='fc2') 
+    out = tf.layers.dense(fc2,     NUM_OUTPUTS,  activation=None, name='logits') 
+    return out
+
