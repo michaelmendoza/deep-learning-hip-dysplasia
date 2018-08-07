@@ -12,11 +12,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
-import h5py
+#import matplotlib as plt
+#import h5py
 
 from ..data_loader import DataGenerator
-from .model import conv_network_1, conv_network_2, unet_like_network
+from .model import conv_network_1, conv_network_2, unet_like_network, VGG
 
 class Classifier:
 
@@ -43,7 +43,7 @@ class Classifier:
 
     self.initNetwork()
     self.train()
-    self.showResults()
+    #self.showResults()
 
   def initNetwork(self):
 
@@ -52,7 +52,7 @@ class Classifier:
     self.Y = tf.placeholder(tf.float32, [None, self.NUM_OUTPUTS]) # Truth Data - Output
 
     # Define loss and optimizer 
-    self.logits = conv_network_1(self.X, self.NUM_OUTPUTS) 
+    self.logits = VGG(self.X, self.NUM_OUTPUTS) 
     self.prediction =  tf.nn.softmax(self.logits)
 
     self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
@@ -120,48 +120,49 @@ class Classifier:
     #hf = h5py.File('results/data.h5', 'w')
     #hf.create_dataset('results', data=self.results)
     #hf.close() 
-    
+'''  
   def showResults(self):
     
     data = self.data
     results = self.results
 
     # Plot Loss
-    plt.figure()
-    plt.plot(results.steps, results.loss_train, label="Training Loss")
-    plt.plot(results.steps, results.loss_test, label="Test Loss")
-    plt.legend()
-    plt.xlabel("Steps")
-    plt.ylabel("Loss")
-    plt.title("Loss for Angle Estimatation")
-    plt.savefig('results/Loss.png')
+    plt.pyplot.figure()
+    plt.pyplot.plot(results.steps, results.loss_train, label="Training Loss")
+    plt.pyplot.plot(results.steps, results.loss_test, label="Test Loss")
+    plt.pyplot.legend()
+    plt.pyplot.xlabel("Steps")
+    plt.pyplot.ylabel("Loss")
+    plt.pyplot.title("Loss for Angle Estimatation")
+    plt.pyplot.savefig('results/Loss.png')
 
     # Plot Accuracy
-    plt.figure() 
-    plt.plot(results.steps, results.accuracy, label="Training Accuracy")
-    plt.legend()
-    plt.xlabel("Steps")
-    plt.ylabel("Accuracy")
-    plt.title("Accuracy for Angle Estimatation")
-    plt.savefig('results/Accuracy.png')
+    plt.pyplot.figure() 
+    plt.pyplot.plot(results.steps, results.accuracy, label="Training Accuracy")
+    plt.pyplot.legend()
+    plt.pyplot.xlabel("Steps")
+    plt.pyplot.ylabel("Accuracy")
+    plt.pyplot.title("Accuracy for Angle Estimatation")
+    plt.pyplot.savefig('results/Accuracy.png')
 
     print(results.pred_train.shape)
     print(results.y_train.shape)
 
-    plt.figure()
-    plt.plot(results.pred_train, label="Predicted Values")
-    plt.plot(results.y_train[:, 0], label="Truth Values")
-    plt.legend()
-    plt.xlabel("Steps")
-    plt.ylabel("Loss")
-    plt.title("Loss for Angle Estimatation - Training Data")
-    plt.savefig('results/Results-Training.png')
+    plt.pyplot.figure()
+    plt.pyplot.plot(results.pred_train, label="Predicted Values")
+    plt.pyplot.plot(results.y_train[:, 0], label="Truth Values")
+    plt.pyplot.legend()
+    plt.pyplot.xlabel("Steps")
+    plt.pyplot.ylabel("Loss")
+    plt.pyplot.title("Loss for Angle Estimatation - Training Data")
+    plt.pyplot.savefig('results/Results-Training.png')
 
-    plt.figure()
-    plt.plot(results.pred_test, label="Predicted Values")
-    plt.plot(data.y_test[:, 0], label="Truth Values")
-    plt.legend()
-    plt.xlabel("Steps")
-    plt.ylabel("Loss")
-    plt.title("Loss for Angle Estimatation - Test Data" )
-    plt.savefig('results/Results.png')
+    plt.pyplot.figure()
+    plt.pyplot.plot(results.pred_test, label="Predicted Values")
+    plt.pyplot.plot(data.y_test[:, 0], label="Truth Values")
+    plt.pyplot.legend()
+    plt.pyplot.xlabel("Steps")
+    plt.pyplot.ylabel("Loss")
+    plt.pyplot.title("Loss for Angle Estimatation - Test Data" )
+    plt.pyplot.savefig('results/Results.png')
+    '''

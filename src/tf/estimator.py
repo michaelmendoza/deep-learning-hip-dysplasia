@@ -12,11 +12,11 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 import tensorflow as tf
 import numpy as np
-import matplotlib.pyplot as plt
-import h5py
+#from matplotlib import pyplot as plt
+#import h5py
 
 from ..data_loader import DataGenerator
-from .model import conv_network_1, conv_network_2, unet_like_network
+from .model import conv_network_1, conv_network_2, unet_like_network, VGG
 
 class Estimator:
 
@@ -43,7 +43,7 @@ class Estimator:
 
     self.initNetwork()
     self.train()
-    self.showResults()
+    #self.showResults()
 
   def initNetwork(self):
 
@@ -52,7 +52,7 @@ class Estimator:
     self.Y = tf.placeholder(tf.float32, [None, self.NUM_OUTPUTS]) # Truth Data - Output
 
     # Define loss and optimizer 
-    self.prediction = conv_network_1(self.X) 
+    self.prediction = VGG(self.X) 
     self.loss = tf.reduce_mean(tf.square(self.prediction - self.Y))
     self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
     self.trainer = self.optimizer.minimize(self.loss)
@@ -109,7 +109,7 @@ class Estimator:
     #hf = h5py.File('results/data.h5', 'w')
     #hf.create_dataset('results', data=self.results)
     #hf.close() 
-    
+'''
   def showResults(self):
     
     data = self.data
@@ -148,3 +148,4 @@ class Estimator:
     plt.ylabel("Loss")
     plt.title("Loss for Angle Estimatation - Test Data" )
     plt.savefig('results/Results.png')
+'''
