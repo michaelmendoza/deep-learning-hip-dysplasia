@@ -52,7 +52,7 @@ class Estimator:
     self.Y = tf.placeholder(tf.float32, [None, self.NUM_OUTPUTS]) # Truth Data - Output
 
     # Define loss and optimizer 
-    self.prediction = conv_network_1(self.X) 
+    self.prediction = conv_network_2(self.X) 
     self.loss = tf.reduce_mean(tf.square(self.prediction - self.Y))
     self.optimizer = tf.train.AdamOptimizer(learning_rate=self.learning_rate)
     self.trainer = self.optimizer.minimize(self.loss)

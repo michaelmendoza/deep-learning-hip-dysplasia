@@ -27,8 +27,8 @@ class DataGenerator:
     def __init__(self, 
         imagedir = 'data/images/', 
         anglecsv = './data/FinalLinkedData.csv', 
-        width = 196, 
-        height = 196, 
+        width = 128, #196, 
+        height = 128, #196, 
         ratio = 0.8, 
         useBinaryClassify = True,
         binaryThreshold = 60.0,
@@ -81,7 +81,7 @@ class DataGenerator:
         
     def loadImageData(self):
         files = self.files
-
+        
         for f in tqdm(files):
             img = io.imread(self.imagedir + f)
             img = transform.resize(img, (self.HEIGHT, self.WIDTH, COLOR_CHANNELS), mode='constant')

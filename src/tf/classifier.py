@@ -52,7 +52,7 @@ class Classifier:
     self.Y = tf.placeholder(tf.float32, [None, self.NUM_OUTPUTS]) # Truth Data - Output
 
     # Define loss and optimizer 
-    self.logits = conv_network_1(self.X, self.NUM_OUTPUTS) 
+    self.logits = conv_network_2(self.X, self.NUM_OUTPUTS) 
     self.prediction =  tf.nn.softmax(self.logits)
 
     self.loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=self.logits, labels=self.Y))
@@ -90,7 +90,7 @@ class Classifier:
           train_loss = self.sess.run(self.loss, feed_dict={ self.X:batch_xs, self.Y: batch_ys })  
           test_loss = self.sess.run(self.loss, feed_dict={ self.X:self.data.x_test, self.Y:self.data.y_test })
           acc = self.sess.run(self.accuracy, feed_dict={ self.X:self.data.x_test, self.Y:self.data.y_test })
-          
+
           _steps.append(step)
           _loss_train.append(train_loss)
           _loss_test.append(test_loss)
@@ -102,7 +102,7 @@ class Classifier:
     # Get prediction after network is trained
     pred_train = self.sess.run(1 - tf.argmax(self.prediction, 1), feed_dict={ self.X: batch_xs })
     pred_test = self.sess.run(1 - tf.argmax(self.prediction, 1), feed_dict={ self.X: self.data.x_test })
-    
+
     # Wrap results in results object
     self.results = lambda: None
     self.results.steps = _steps;
@@ -144,9 +144,6 @@ class Classifier:
     plt.ylabel("Accuracy")
     plt.title("Accuracy for Angle Estimatation")
     plt.savefig('results/Accuracy.png')
-
-    print(results.pred_train.shape)
-    print(results.y_train.shape)
 
     plt.figure()
     plt.plot(results.pred_train, label="Predicted Values")
