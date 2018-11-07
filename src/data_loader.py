@@ -25,8 +25,8 @@ class Stats:
 class DataGenerator:
 
     def __init__(self, 
-        imagedir = 'data/images/', 
-        anglecsv = './data/FinalLinkedData.csv', 
+        imagedir = 'data2/cropped/', #'data/images/', 
+        anglecsv = './data2/final_data.csv', #'./data/FinalLinkedData.csv', 
         width = 128, #196, 
         height = 128, #196, 
         ratio = 0.8, 
@@ -42,7 +42,7 @@ class DataGenerator:
         self.HEIGHT = height
         self.CHANNELS = 1
         self.ratio = ratio
-
+        
         self.useBinaryClassify = useBinaryClassify
         self.binaryThreshold = binaryThreshold
 
@@ -60,8 +60,17 @@ class DataGenerator:
         with open(self.anglecsv) as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                key = row['Current Standardized Name']
-                if row['Alpha'] != '' and row['Alpha'] != 'cm':
+                # key = row['Current Standardized Name']
+                
+                # Get key and format key
+                key = row['linked_images'] 
+                key = int(key)
+                if key < 10000:
+                    key ='0' + str(key) + '.png'
+                else:
+                    key = str(key) + '.png'
+
+                if row['Alpha'] != '' and row['Alpha'] != 'cm' and row['Alpha'] != 'Ia':
                     alpha = float(row['Alpha'])
                     beta = float(row['Beta'])
                     angle_dict[key] = [alpha, beta]
@@ -185,6 +194,3 @@ if __name__ == '__main__':
     plt.figure()
     plt.hist(data.y_train)
     plt.show()
-
-
-    
