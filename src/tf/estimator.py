@@ -124,11 +124,6 @@ class Estimator:
     self.results.y_train = batch_ys
     self.results.x_test = self.data.x_test
     self.results.y_test = self.data.y_test
-
-    # Save data in h5py
-    #hf = h5py.File('results/data.h5', 'w')
-    #hf.create_dataset('results', data=self.results)
-    #hf.close() 
     
   def showResults(self):
     
