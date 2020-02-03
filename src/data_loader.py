@@ -25,12 +25,12 @@ class Stats:
 class DataGenerator:
 
     def __init__(self, 
-        imagedir = 'data2/cropped/', #'data/images/', 
-        anglecsv = './data2/final_data.csv', #'./data/FinalLinkedData.csv', 
+        imagedir = 'hip_images_marta/', #'data2/cropped/', #'data/images/', 
+        anglecsv =  'hip_images_marta/final_data.csv', #'./data2/final_data.csv', #'./data/FinalLinkedData.csv', 
         width = 128, #196, 
         height = 128, #196, 
         ratio = 0.8, 
-        useBinaryClassify = True,
+        useBinaryClassify = True, 
         binaryThreshold = 60.0,
         useNormalization = False, 
         useWhitening = True, 
@@ -45,6 +45,7 @@ class DataGenerator:
         
         self.useBinaryClassify = useBinaryClassify
         self.binaryThreshold = binaryThreshold
+        self.useCropping = False
 
         self.useNormalization = useNormalization
         self.useWhitening = useWhitening
@@ -55,7 +56,7 @@ class DataGenerator:
         print("Loading and formating image data: Complete")
         print("Data size: Input Data", self.x_train.shape, " Truth Data:", self.y_train.shape);
 
-    def loadCSV(self):
+    def loadOldCSV(self):
         angle_dict = {}
         with open(self.anglecsv) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -76,6 +77,21 @@ class DataGenerator:
                     angle_dict[key] = [alpha, beta]
         return angle_dict 
 
+    def loadMartaCSV(self):
+        angle_dict = {}
+        with open(self.anglecsv) as csvfile:
+            reader = csv.DictReader(csvfile)
+            for row in reader:
+                
+                # Get key and format key
+                key = row['Match 1'] 
+
+                if row['Alpha'] != '' and row['Alpha'] != 'cm':
+                    alpha = float(row['Alpha'])
+                    beta = float(row['Beta'])
+                    angle_dict[key] = [alpha, beta]
+        return angle_dict 
+
     def formatAngleData(self):
         files = os.listdir(self.imagedir)
 
@@ -87,12 +103,20 @@ class DataGenerator:
                 files_with_angle.append(f)
 
         return np.array(angle_data), files_with_angle
-        
+     
+    def cropimages(self, img):
+
+        # Do cropping 
+
+        return img
+
     def loadImageData(self):
         files = self.files
         
         for f in tqdm(files):
             img = io.imread(self.imagedir + f)
+            if(self.useCropping): 
+                img = cropimages(img)
             img = transform.resize(img, (self.HEIGHT, self.WIDTH, COLOR_CHANNELS), mode='constant')
             img = img[:,:,1] 
 
@@ -105,7 +129,7 @@ class DataGenerator:
         return imgs
 
     def generate(self):
-        self.angle_dict = self.loadCSV()
+        self.angle_dict = self.loadMartaCSV()
         self.angle_data, self.files = self.formatAngleData() 
         
         # Load image data

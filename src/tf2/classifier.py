@@ -16,24 +16,23 @@ def Classify():
   
   # Training Parameters
   epochs = 50 
-  batch_size = 128 
-  validation_split = 0.2
-  shuffle = True
+  batch_size = 32 
+  test_batch_size = 32
 
   # Import Dataset
-  data = DataGenerator(width=128, height=128)
+  data = DataGenerator(width=256, height=256)
   x_train = data.x_train
   y_train = data.y_train
   x_test = data.x_test
   y_test = data.y_test
   print("Training DataSet: " + str(x_train.shape) + " " + str(y_train.shape))
   print("Test DataSet: " + str(x_test.shape) + " " + str(y_test.shape))
-
-  train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train)).batch(64).shuffle(10000)
+  
+  train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train)).batch(batch_size).shuffle(1000)
   train_dataset = train_dataset.map(lambda x, y: (tf.image.random_flip_left_right(x), y))
   train_dataset = train_dataset.repeat()
   
-  valid_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(350).shuffle(10000)
+  valid_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(test_batch_size).shuffle(1000)
   valid_dataset = valid_dataset.repeat()
 
   # Network Parameters
