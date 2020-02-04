@@ -8,7 +8,6 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import time
 import numpy as np 
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import regularizers
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
@@ -77,7 +76,7 @@ def Classify():
           validation_data=valid_dataset,
           validation_steps = 10, 
           callbacks=callbacks)
-
+  
   evaluation = model.evaluate(x_test, y_test, verbose=1)
   end = time.time()
 
