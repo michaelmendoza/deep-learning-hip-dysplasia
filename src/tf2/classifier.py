@@ -9,6 +9,7 @@ import time
 import numpy as np 
 import tensorflow as tf
 from tensorflow.keras import regularizers
+from tensorflow.keras.models import load_model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
 import matplotlib.pyplot as plt
@@ -94,3 +95,32 @@ def Classify():
   file_time = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
   plt.savefig('results/tf2/classifier_' + file_time + '.png')
   model.save('results/tf2/classifier_' + file_time + '.h5') 
+
+def Load(filename):
+
+  # Import Dataset
+  data = DataGenerator(width=256, height=256)
+  x_train = data.x_train
+  y_train = data.y_train
+  x_test = data.x_test
+  y_test = data.y_test
+  print("Training DataSet: " + str(x_train.shape) + " " + str(y_train.shape))
+  print("Test DataSet: " + str(x_test.shape) + " " + str(y_test.shape))
+
+  print("Loading model weights ...")
+  model = load_model(filename)
+  model.summary()
+
+  print("Apply loaded model to data ...")
+  #evaluation = model.evaluate(x_test, y_test, verbose=0)
+  predict = model.predict(x_test)
+  print(predict.shape)
+  
+  #print(y_test[:,0])
+  #print(y_test[:,1])
+  #print(predict[:,0])
+  #print(predict[:,1])
+  #predict_correct = np.argmax(predict, axis=1)
+  #print(predict_correct)
+  #acc = np.mean(predict_correct)
+  #print(acc)
