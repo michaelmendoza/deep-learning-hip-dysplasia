@@ -4,10 +4,10 @@ A Deep Learning Classifier/Estimator for measuring hip properties and hip dyspla
 
 ## Getting Starting 
 
-You will need to have python installed with tensorflow and a number of python libraries. The simplest method to do this is to install the [conda package manager](https://conda.io/miniconda.html) and run the following command:
+You will need to have python installed with tensorflow v2.0 and a number of python libraries. The simplest method to do this is to install the [conda package manager](https://conda.io/miniconda.html) and run the following command:
 
 ```
-conda create -n tf python=3.6 numpy=1.15.4 matplotlib scikit-image=0.14.1 tqdm
+conda create -n tf python=3.6 numpy=1.17.3 matplotlib scikit-image=0.15.0 tqdm
 ```
 
 Then if you have a CUDA enabled GPU use: `pip install tensorflow-gpu`
