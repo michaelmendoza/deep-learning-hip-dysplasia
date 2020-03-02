@@ -142,7 +142,7 @@ def resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS):
     x = layers.MaxPooling2D(3)(x)
 
     num_filters = 64
-    for stage in range(2):
+    for stage in range(3):
         if(stage == 0):
             x = res_net_block(x, num_filters, 3)
         else:
