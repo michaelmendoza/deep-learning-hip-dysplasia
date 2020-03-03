@@ -140,6 +140,7 @@ def resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS):
     x = layers.Conv2D(32, 3, padding='same', activation='relu', kernel_initializer=he_init)(inputs)
     x = layers.Conv2D(64, 3, padding='same', activation='relu', kernel_initializer=he_init)(x)
     x = layers.MaxPooling2D(3)(x)
+    x = layers.Dropout(0.5)(x)
 
     num_filters = 64
     for stage in range(3):
@@ -155,6 +156,7 @@ def resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS):
 
     x = layers.GlobalAveragePooling2D()(x)
     x = layers.Dense(1000, activation='relu', kernel_initializer=he_init)(x)
+    x = layers.Dropout(0.5)(x)
     outputs = layers.Dense(NUM_OUTPUTS, activation='softmax')(x)
 
     model = keras.Model(inputs, outputs)
