@@ -18,7 +18,7 @@ from .model import conv0, conv1, conv2, conv3, resnet, resnet2
 def Classify():
   
   # Training Parameters
-  epochs = 50
+  epochs = 100
   batch_size = 16 
   test_batch_size = 8
 
@@ -94,15 +94,16 @@ def Classify():
   file_time = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
   plt.savefig('results/tf2/classifier_' + file_time + '.png')
   model.save('results/tf2/classifier_' + file_time + '.h5') 
-  #plt.close()
+  plt.close()
 
-  #plt.plot(history.history["loss"])
-  #plt.plot(history.history["val_loss"])
-  #plt.ylabel("Loss")
-  #plt.xlabel("Epochs")
-  #plt.title("Classify Summary: Accuracy: %.2f Time Elapsed: %.2f seconds" % (model.metrics.val_loss, (end - start)))
-  #plt.legend(["Train Loss", "Test Loss"], loc="upper left")
+  print(model.metrics_names)
+  plt.plot(history.history["loss"])
+  plt.plot(history.history["val_loss"])
+  plt.ylabel("Loss")
+  plt.xlabel("Epochs")
+  plt.title("Classify Summary: Accuracy: %.2f Time Elapsed: %.2f seconds" % (evaluation[0], (end - start)))
+  plt.legend(["Train Loss", "Test Loss"], loc="upper left")
 
-  #file_time2 = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
-  #plt.savefig('results/tf2/loss_' + file_time2 + '.png')
-  #model.save('results/tf2/loss_' + file_time2 + '.h5') 
+  file_time2 = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
+  plt.savefig('results/tf2/loss_' + file_time2 + '.png')
+  model.save('results/tf2/loss_' + file_time2 + '.h5') 
