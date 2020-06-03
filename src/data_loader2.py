@@ -1,4 +1,3 @@
-
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
@@ -22,26 +21,28 @@ class Stats:
         self.mean = mean
         self.std = std
 
-class DataGenerator:
+class DataGenerator2:
 
     def __init__(self, 
         imagedir = 'hip_images_marta/', #'data2/cropped/', #'data/images/', 
         anglecsv =  'hip_images_marta/final_data.csv', #'./data2/final_data.csv', #'./data/FinalLinkedData.csv', 
         width = 128, #196, 
         height = 128, #196, 
-        ratio = 0.8, 
+        ratio1 = 0.8,
+        ratio2 = 0.1, 
         useBinaryClassify = True, 
-        binaryThreshold = "Discharged", #60.0,
-        useNormalization = True,       #useNormalization = False
+        binaryThreshold = 60.0,
+        useNormalization = False, 
         useWhitening = True, 
-        useRandomOrder = False):        #useRandomOrder=True):
+        useRandomOrder = True):
         
         self.imagedir = imagedir
         self.anglecsv = anglecsv
         self.WIDTH = width
         self.HEIGHT = height
         self.CHANNELS = 1
-        self.ratio = ratio
+        self.ratio1 = ratio1
+        self.ratio2 = ratio2
         
         self.useBinaryClassify = useBinaryClassify
         self.binaryThreshold = binaryThreshold
@@ -78,32 +79,31 @@ class DataGenerator:
         return angle_dict 
 
     def loadMartaCSV(self):
-        outcome_dict = {} #angle_dict = {}
+        angle_dict = {}
         with open(self.anglecsv) as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
                 
                 # Get key and format key
                 key = row['Match 1'] 
-                outcome_dict[key] = row['Outcome']
 
-                #if row['C Alpha'] != '' and row['C Alpha'] != 'cm' and row['C Alpha'] != 'X' and row['C Alpha'] != 'no' and row['C Alpha'] != 'No ' and row['C Beta'] != 'cm' and row['C Beta'] != 'X':
-                    #alpha = float(row['C Alpha'])
-                    #beta = float(row['C Beta'])
-                    #angle_dict[key] = [alpha, beta]
-        return outcome_dict #angle_dict 
+                if row['C Alpha'] != '' and row['C Alpha'] != 'cm' and row['C Alpha'] != 'X' and row['C Alpha'] != 'No ' and row['Beta'] != 'cm' and row['C Alpha'] != 'no':
+                    alpha = float(row['C Alpha'])
+                    beta = float(row['Beta'])
+                    angle_dict[key] = [alpha, beta]
+        return angle_dict 
 
     def formatAngleData(self):
         files = os.listdir(self.imagedir)
 
         files_with_angle = []
-        outcome = [] #angle_data = []
+        angle_data = []
         for f in files:
-            if f in self.outcome_dict:  #self.angle_dict
-                outcome.append(self.outcome_dict[f]) #angle_data.append(self.angle_dict[f])
+            if f in self.angle_dict:
+                angle_data.append(self.angle_dict[f])
                 files_with_angle.append(f)
 
-        return outcome, files_with_angle #np.array(angle_data), files_with_angle
+        return np.array(angle_data), files_with_angle
      
     def cropimages(self, img):
 
@@ -130,20 +130,20 @@ class DataGenerator:
         return imgs
 
     def generate(self):
-        self.outcome_dict = self.loadMartaCSV() #self.angle_dict = self.loadMartaCSV()
-        self.outcome, self.files = self.formatAngleData()  #self.angle_data, self.files = self.formatAngleData() 
+        self.angle_dict = self.loadMartaCSV()
+        self.angle_data, self.files = self.formatAngleData() 
         
         # Load image data
         self.image_data = self.loadImageData()
 
         # Grab angle data:
-        #self.angle_data = np.reshape(self.angle_data[:,0], (-1, 1))
+        self.angle_data = np.reshape(self.angle_data[:,0], (-1, 1))
 
         # Randomize data order
         if self.useRandomOrder:
-            indices = [_ for _ in range(len(self.outcome))] #indices = [_ for _ in range(len(self.angle_data))]
+            indices = [_ for _ in range(len(self.angle_data))]
             self.image_data = self.image_data[indices]
-            self.outcome = self.outcome[indices] #self.angle_data = self.angle_data[indices]
+            self.angle_data = self.angle_data[indices]
 
         # Data preprocessing
         if self.useNormalization:
@@ -153,33 +153,34 @@ class DataGenerator:
             self.image_data, self.img_mean, self.img_std = self.whiten(self.image_data)
 
         if self.useBinaryClassify:
-            self.outcome = self.threshold(self.outcome) #self.angle_data = self.threshold(self.angle_data)
-        #else:
-            #if self.useNormalization:
-                #self.angle_data, self.ang_min, self.ang_max = self.normalize(self.angle_data)
-            #if self.useWhitening:
-                #self.angle_data, self.ang_mean, self.ang_std = self.whiten(self.angle_data)
+            self.angle_data = self.threshold(self.angle_data)
+        else:
+            if self.useNormalization:
+                self.angle_data, self.ang_min, self.ang_max = self.normalize(self.angle_data)
+            if self.useWhitening:
+                self.angle_data, self.ang_mean, self.ang_std = self.whiten(self.angle_data)
 
         # Split data into test/training sets 
-        index = int(self.ratio * len(self.image_data)) # Split index
-        self.x_train = self.image_data[0:index, :]
-        self.x_test = self.image_data[index:, :] 
+        index1 = int(self.ratio1 * len(self.image_data)) # Split index
+        self.x_train = self.image_data[0:index1, :]
+        index2 = int((self.ratio1+self.ratio2) * len(self.image_data))
+        self.x_val = self.image_data[index1:index2, :] 
+        self.x_test = self.image_data[index2:, :] 
 
         if self.useBinaryClassify:
-            self.y_train = self.outcome[0:index] #self.y_train = self.angle_data[0:index, :]
-            self.y_test = self.outcome[index:len(self.image_data)] #self.y_test = self.angle_data[index:, :]
-        else:
-            self.y_train = self.outcome[0:index] #self.y_train = self.angle_data[0:index]
-            self.y_test = self.outcome[index:] #self.y_test = self.angle_data[index:]
+            self.y_train = self.angle_data[0:index1]
+            self.y_val = self.angle_data[index1:index2]
+            self.y_test = self.angle_data[index2:]
 
+        else:
+            self.y_train = self.angle_data[0:index1]
+            self.y_test = self.angle_data[index1:index2]
+            self.y_test = self.angle_data[index2:]
 
     def threshold(self, data): 
-        threshold = np.zeros(len(data))
-        #threshold = (data > self.binaryThreshold) * 1
-        for i in range(len(data)):
-            threshold[i]= (data[i]==self.binaryThreshold)*1
-        # OneHot Encoding #onehot = np.concatenate( (1 - threshold, threshold), axis = 1)  # OneHot Encoding
-        return threshold #return onehot
+        threshold = (data < self.binaryThreshold) * 1
+        onehot = np.concatenate( (1 - threshold, threshold), axis = 1)  # OneHot Encoding
+        return onehot[:, 0]
 
     def next_batch(self, batch_size):
         length = self.x_train.shape[0]
@@ -210,7 +211,7 @@ class DataGenerator:
         plt.show()
 
 if __name__ == '__main__':
-    data = DataGenerator()
+    data = DataGenerator2()
     xs, ys = data.next_batch(128)
 
     #plt.figure(1)

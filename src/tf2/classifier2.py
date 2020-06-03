@@ -12,30 +12,37 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
 import matplotlib.pyplot as plt
-from ..data_loader import DataGenerator
+from ..data_loader2 import DataGenerator2
 from .model import conv0, conv1, conv2, conv3, resnet, resnet2
 
-def Classify():
+def Classify2():
   
   # Training Parameters
   epochs = 50
-  batch_size = 32 
+  batch_size = 16
   test_batch_size = 8
+  val_batch_size = 8
 
   # Import Dataset
-  data = DataGenerator(width=256, height=256)
+  data = DataGenerator2(width=256, height=256)
   x_train = data.x_train
   y_train = data.y_train
+  x_val = data.x_val
+  y_val = data.y_val
   x_test = data.x_test
   y_test = data.y_test
   print("Training DataSet: " + str(x_train.shape) + " " + str(y_train.shape))
+  print("Validation DataSet: " + str(x_val.shape) + " " + str(y_val.shape))
   print("Test DataSet: " + str(x_test.shape) + " " + str(y_test.shape))
   
   train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train)).batch(batch_size).shuffle(1000)
   train_dataset = train_dataset.repeat()
     
-  valid_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(test_batch_size).shuffle(1000)
-  valid_dataset = valid_dataset.repeat()
+  val_dataset = tf.data.Dataset.from_tensor_slices((x_val, y_val)).batch(val_batch_size).shuffle(1000)
+  val_dataset = val_dataset.repeat()
+
+  test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(test_batch_size).shuffle(1000)
+  test_dataset = test_dataset.repeat()
 
   def lr_schedule(epoch):
       """ Learning Rate Schedule. Learning rate is scheduled to be reduced 
@@ -61,7 +68,7 @@ def Classify():
   NUM_OUTPUTS = 1
 
   model = resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS);
-  model.compile(optimizer=Adam(learning_rate=0.01), loss='binary_crossentropy', metrics=['binary_accuracy'])
+  model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['binary_accuracy', tf.keras.metrics.Recall()])
   model.summary()
 
   # Prepare callbacks
@@ -72,22 +79,23 @@ def Classify():
   start = time.time();
   history = model.fit(train_dataset, 
           epochs=epochs, 
-          steps_per_epoch=200,
-          validation_data=valid_dataset,
-          validation_steps = 10)
+          steps_per_epoch=108,
+          validation_data=val_dataset,
+          validation_steps = 27)
   
   evaluation = model.evaluate(x_test, y_test, verbose=1)
   end = time.time()
 
-  print('Classify Summary: Accuracy: %.2f Time Elapsed: %.2f seconds' % (evaluation[1], (end - start)) )
-
+  print('Classify Summary: Test Accuracy: %.2f Time Elapsed: %.2f seconds' % (evaluation[1], (end - start)) )
+  print('Classify Summary: Test Loss: %.2f Time Elapsed: %.2f seconds' % (evaluation[0], (end - start)) )
+  print('Classify Summary: Sensitivity: %.2f Time Elapsed: %.2f seconds' % (evaluation[2], (end - start)) )
   # Plot Accuracy 
   plt.plot(history.history["binary_accuracy"])
   plt.plot(history.history["val_binary_accuracy"])
   plt.ylabel("Accuracy")
   plt.xlabel("Epochs")
-  plt.title('Classify Summary: Accuracy: %.2f Time Elapsed: %.2f seconds' % (evaluation[1], (end - start)))
-  plt.legend(["Train Accuracy", "Test Accuracy"], loc="upper left")
+  plt.title('Classify Summary: Test Accuracy: %.2f Time Elapsed: %.2f seconds' % (evaluation[1], (end - start)))
+  plt.legend(["Train Accuracy", "Validation Accuracy"], loc="upper left")
 
   import datetime
   file_time = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
@@ -100,9 +108,11 @@ def Classify():
   plt.plot(history.history["val_loss"])
   plt.ylabel("Loss")
   plt.xlabel("Epochs")
-  plt.title("Classify Summary: Loss: %.2f Time Elapsed: %.2f seconds" % (evaluation[0], (end - start)))
-  plt.legend(["Train Loss", "Test Loss"], loc="upper left")
+  plt.title("Classify Summary: Test Loss: %.2f Time Elapsed: %.2f seconds" % (evaluation[0], (end - start)))
+  plt.legend(["Train Loss", "Validation Loss"], loc="upper left")
 
   file_time2 = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
   plt.savefig('results/tf2/loss_' + file_time2 + '.png')
   model.save('results/tf2/loss_' + file_time2 + '.h5') 
+
+ 
