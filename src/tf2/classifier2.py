@@ -110,9 +110,16 @@ def Classify2():
   plt.xlabel("Epochs")
   plt.title("Classify Summary: Test Loss: %.2f Time Elapsed: %.2f seconds" % (evaluation[0], (end - start)))
   plt.legend(["Train Loss", "Validation Loss"], loc="upper left")
+  plt.savefig('results/tf2/loss_' + file_time + '.png')
 
-  file_time2 = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
-  plt.savefig('results/tf2/loss_' + file_time2 + '.png')
-  model.save('results/tf2/loss_' + file_time2 + '.h5') 
+  plt.close()
+
+  plt.plot(history.history["recall"])
+  plt.plot(history.history["val_recall"])
+  plt.ylabel("Sensitivity")
+  plt.xlabel("Epochs")
+  plt.title("Classify Summary: Test Sensitivity: %.2f Time Elapsed: %.2f seconds" % (evaluation[2], (end - start)))
+  plt.legend(["Train Sensitivity", "Validation Sensitivity"], loc="upper left")
+  plt.savefig('results/tf2/sensitivity_' + file_time + '.png') 
 
  

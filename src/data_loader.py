@@ -29,7 +29,8 @@ class DataGenerator:
         anglecsv =  'hip_images_marta/final_data.csv', #'./data2/final_data.csv', #'./data/FinalLinkedData.csv', 
         width = 128, #196, 
         height = 128, #196, 
-        ratio = 0.8, 
+        ratio1 = 0.8, 
+        ratio2 = 0.1,
         useBinaryClassify = True, 
         binaryThreshold = "Discharged", #60.0,
         useNormalization = True,       #useNormalization = False
@@ -41,7 +42,8 @@ class DataGenerator:
         self.WIDTH = width
         self.HEIGHT = height
         self.CHANNELS = 1
-        self.ratio = ratio
+        self.ratio1 = ratio1
+        self.ratio2 = ratio2
         
         self.useBinaryClassify = useBinaryClassify
         self.binaryThreshold = binaryThreshold
@@ -161,23 +163,28 @@ class DataGenerator:
                 #self.angle_data, self.ang_mean, self.ang_std = self.whiten(self.angle_data)
 
         # Split data into test/training sets 
-        index = int(self.ratio * len(self.image_data)) # Split index
-        self.x_train = self.image_data[0:index, :]
-        self.x_test = self.image_data[index:, :] 
+        index1 = int(self.ratio1 * len(self.image_data)) # Split index
+        self.x_train = self.image_data[0:index1, :]
+        index2 = int((self.ratio1+self.ratio2) * len(self.image_data))
+        self.x_val = self.image_data[index1:index2, :] 
+        self.x_test = self.image_data[index2:, :] 
 
         if self.useBinaryClassify:
-            self.y_train = self.outcome[0:index] #self.y_train = self.angle_data[0:index, :]
-            self.y_test = self.outcome[index:len(self.image_data)] #self.y_test = self.angle_data[index:, :]
+            self.y_train = self.outcome[0:index1]
+            self.y_val = self.outcome[index1:index2]
+            self.y_test = self.outcome[index2:]
+
         else:
-            self.y_train = self.outcome[0:index] #self.y_train = self.angle_data[0:index]
-            self.y_test = self.outcome[index:] #self.y_test = self.angle_data[index:]
+            self.y_train = self.outcome[0:index1]
+            self.y_test = self.outcome[index1:index2]
+            self.y_test = self.outcome[index2:]
 
 
     def threshold(self, data): 
         threshold = np.zeros(len(data))
         #threshold = (data > self.binaryThreshold) * 1
         for i in range(len(data)):
-            threshold[i]= (data[i]==self.binaryThreshold)*1
+            threshold[i]= (data[i]!=self.binaryThreshold)*1
         # OneHot Encoding #onehot = np.concatenate( (1 - threshold, threshold), axis = 1)  # OneHot Encoding
         return threshold #return onehot
 
