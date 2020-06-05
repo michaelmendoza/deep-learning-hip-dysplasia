@@ -86,9 +86,10 @@ class DataGenerator2:
                 
                 # Get key and format key
                 key = row['Match 1'] 
-
+                #if row['Alpha'] != '' and row['Alpha'] != 'cm' and row['Alpha'] != 'X' and row['Alpha'] != 'No ' and row['Beta'] != 'cm' and row['Alpha'] != 'no':
                 if row['C Alpha'] != '' and row['C Alpha'] != 'cm' and row['C Alpha'] != 'X' and row['C Alpha'] != 'No ' and row['Beta'] != 'cm' and row['C Alpha'] != 'no':
                     alpha = float(row['C Alpha'])
+                    #alpha = float(row['Alpha'])
                     beta = float(row['Beta'])
                     angle_dict[key] = [alpha, beta]
         return angle_dict 

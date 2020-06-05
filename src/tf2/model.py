@@ -127,11 +127,11 @@ def resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS):
     def res_net_block(input_data, filters, kernel_size, strides=1):
         x = layers.Conv2D(filters, kernel_size, strides=strides, padding='same', activation='relu', kernel_initializer=he_init)(input_data)
         x = layers.BatchNormalization()(x)
-        x = layers.Conv2D(filters, kernel_size, padding='same', activation='relu', kernel_initializer=he_init)(x)
+        x = layers.Conv2D(filters, kernel_size, padding='same', activation=None, kernel_initializer=he_init)(x)
         x = layers.BatchNormalization()(x)
         
         if(strides == 2):  # add linear projection residual shortcut connection to match changed dims
-            input_data = layers.Conv2D(filters, 1, strides=strides, padding='same', activation='relu', kernel_initializer=he_init)(input_data)
+            input_data = layers.Conv2D(filters, 1, strides=strides, padding='same', activation=None, kernel_initializer=he_init)(input_data)
         x = layers.Add()([x, input_data])
         x = layers.Activation('relu')(x)
         return x
