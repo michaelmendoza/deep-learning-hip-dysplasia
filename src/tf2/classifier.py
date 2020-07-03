@@ -2,6 +2,8 @@
 '''
 Basic Keras Code for a convolutional neural network
 '''
+
+#this is the classifier used if using outcome as the diagnostic parameter
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -12,7 +14,7 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
 import matplotlib.pyplot as plt
-from ..data_loader import DataGenerator
+from ..data_loader import DataGenerator   #for this classifier we import only DataGenerator since we are using the outcome
 from .model import conv0, conv1, conv2, conv3, resnet, resnet2
 
 def Classify():
@@ -23,7 +25,7 @@ def Classify():
   test_batch_size = 8
 
   # Import Dataset
-  data = DataGenerator(width=256, height=256)
+  data = DataGenerator(width=256, height=256)   #in this case we have specified the width to be 256, larger than the standard in the dataloader file
   x_train = data.x_train
   y_train = data.y_train
   x_test = data.x_test
