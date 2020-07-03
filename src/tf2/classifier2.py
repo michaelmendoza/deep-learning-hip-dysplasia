@@ -81,16 +81,19 @@ def Classify2():    #again specifiy the function to be 2 and hence refere to the
   start = time.time();
   history = model.fit(train_dataset, 
           epochs=epochs, 
-          steps_per_epoch=108,
+          steps_per_epoch=108,    #108 since training dataset is 864 aprox, 864/batchsize = 864/16 = 54, and this is usually x2 hence 108
           validation_data=val_dataset,
-          validation_steps = 27)
+          validation_steps = 27)    #27 since validation dataset is 108 aprox, 108/batchsize = 108/8 = 13.5, and this is usually x2 hence 27
   
-  evaluation = model.evaluate(x_test, y_test, verbose=1)
+  evaluation = model.evaluate(x_test, y_test, verbose=1)    #after training and validation end (50 epochs), we finish with testing
   end = time.time()
 
   print('Classify Summary: Test Accuracy: %.2f Time Elapsed: %.2f seconds' % (evaluation[1], (end - start)) )
   print('Classify Summary: Test Loss: %.2f Time Elapsed: %.2f seconds' % (evaluation[0], (end - start)) )
-  print('Classify Summary: Sensitivity: %.2f Time Elapsed: %.2f seconds' % (evaluation[2], (end - start)) )
+  print('Classify Summary: Sensitivity: %.2f Time Elapsed: %.2f seconds' % (evaluation[2], (end - start)) )   #note sensitivity=recall
+  
+  #if more parameters are to be evaluated the evaluation summary should be brought to find how these are ordered
+  
   # Plot Accuracy 
   plt.plot(history.history["binary_accuracy"])
   plt.plot(history.history["val_binary_accuracy"])
@@ -100,28 +103,30 @@ def Classify2():    #again specifiy the function to be 2 and hence refere to the
   plt.legend(["Train Accuracy", "Validation Accuracy"], loc="upper left")
 
   import datetime
-  file_time = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
-  plt.savefig('results/tf2/classifier_' + file_time + '.png')
-  model.save('results/tf2/classifier_' + file_time + '.h5') 
+  file_time = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')  #get date and time for today for filename
+  plt.savefig('results/tf2/classifier_' + file_time + '.png')   #save graph
+  model.save('results/tf2/classifier_' + file_time + '.h5')     #save model weights in h5 file
   plt.close()
 
   print(model.metrics_names)
+  
+  # Plot Loss
   plt.plot(history.history["loss"])
   plt.plot(history.history["val_loss"])
   plt.ylabel("Loss")
   plt.xlabel("Epochs")
   plt.title("Classify Summary: Test Loss: %.2f Time Elapsed: %.2f seconds" % (evaluation[0], (end - start)))
   plt.legend(["Train Loss", "Validation Loss"], loc="upper left")
-  plt.savefig('results/tf2/loss_' + file_time + '.png')
-
+  plt.savefig('results/tf2/loss_' + file_time + '.png') #save loss graph
   plt.close()
 
+  # Plot Sensitivity
   plt.plot(history.history["recall"])
   plt.plot(history.history["val_recall"])
   plt.ylabel("Sensitivity")
   plt.xlabel("Epochs")
   plt.title("Classify Summary: Test Sensitivity: %.2f Time Elapsed: %.2f seconds" % (evaluation[2], (end - start)))
   plt.legend(["Train Sensitivity", "Validation Sensitivity"], loc="upper left")
-  plt.savefig('results/tf2/sensitivity_' + file_time + '.png') 
+  plt.savefig('results/tf2/sensitivity_' + file_time + '.png')  #save sensitivity graph
 
  
