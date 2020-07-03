@@ -1,4 +1,6 @@
 
+#Several CNN structures are contained withtin this file, currently the ResNet2 network is the one used. As refered to in the report, this corresponds to Residual Block B
+
 import tensorflow as tf
 from tensorflow import keras
 from tensorflow.keras import layers
@@ -124,20 +126,20 @@ def resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS):
 
     he_init = keras.initializers.he_normal(seed=None)
 
-    def res_net_block(input_data, filters, kernel_size, strides=1):
-        x = layers.Conv2D(filters, kernel_size, strides=strides, padding='same', activation='relu', kernel_initializer=he_init)(input_data)
-        x = layers.BatchNormalization()(x)
-        x = layers.Conv2D(filters, kernel_size, padding='same', activation=None, kernel_initializer=he_init)(x)
+    def res_net_block(input_data, filters, kernel_size, strides=1):     #this is the structure of the residual block, it contains 2 convolutional layers
+        x = layers.Conv2D(filters, kernel_size, strides=strides, padding='same', activation='relu', kernel_initializer=he_init)(input_data) #first layer does have its activation
+        x = layers.BatchNormalization()(x)      #batch normalisation after each conv layer
+        x = layers.Conv2D(filters, kernel_size, padding='same', activation=None, kernel_initializer=he_init)(x) #no activation, if residual block A is wanted, the activation here should be changed to relu
         x = layers.BatchNormalization()(x)
         
         if(strides == 2):  # add linear projection residual shortcut connection to match changed dims
             input_data = layers.Conv2D(filters, 1, strides=strides, padding='same', activation=None, kernel_initializer=he_init)(input_data)
-        x = layers.Add()([x, input_data])
-        x = layers.Activation('relu')(x)
+        x = layers.Add()([x, input_data])       #add the input with the current transformation the residual block has done
+        x = layers.Activation('relu')(x)        #do the activation after the addition for residual block B; if doing residual block A this line can be deleted
         return x
 
     inputs = keras.Input(shape=(HEIGHT, WIDTH, CHANNELS))
-    x = layers.Conv2D(32, 3, padding='same', activation='relu', kernel_initializer=he_init)(inputs)
+    x = layers.Conv2D(32, 3, padding='same', activation='relu', kernel_initializer=he_init)(inputs)     #this is the code for the initial layers
     x = layers.Conv2D(64, 3, padding='same', activation='relu', kernel_initializer=he_init)(x)
     x = layers.MaxPooling2D(3)(x)
 
@@ -154,8 +156,8 @@ def resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS):
         num_filters *= 2
 
     x = layers.GlobalAveragePooling2D()(x)
-    x = layers.Dense(1000, activation='relu', kernel_initializer=he_init)(x)
-    outputs = layers.Dense(NUM_OUTPUTS, activation='sigmoid')(x)
+    x = layers.Dense(1000, activation='relu', kernel_initializer=he_init)(x)        #1000 fully connected layer at the end
+    outputs = layers.Dense(NUM_OUTPUTS, activation='sigmoid')(x)        #last layer with sigmoid activatio since binary, corresponds to either a 1 or 0
 
     model = keras.Model(inputs, outputs)
     return model
