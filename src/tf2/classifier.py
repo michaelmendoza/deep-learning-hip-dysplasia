@@ -21,25 +21,32 @@ def Classify():
   
   # Training Parameters
   epochs = 50
-  batch_size = 32 
+  batch_size = 16 
   test_batch_size = 8
+  val_batch_size = 8
 
-  # Import Dataset
+  # Import Dataset, in this case the y label is the outcome
   data = DataGenerator(width=256, height=256)   #in this case we have specified the width to be 256, larger than the standard in the dataloader file
-  x_train = data.x_train
+  x_train = data.x_train  
   y_train = data.y_train
+  x_val = data.x_val
   x_test = data.x_test
   y_test = data.y_test
+  y_val = data.y_val
   print("Training DataSet: " + str(x_train.shape) + " " + str(y_train.shape))
+  print("Validation DataSet: " + str(x_val.shape) + " " + str(y_val.shape))
   print("Test DataSet: " + str(x_test.shape) + " " + str(y_test.shape))
   
   train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train)).batch(batch_size).shuffle(1000)
   train_dataset = train_dataset.repeat()
+  
+  val_dataset = tf.data.Dataset.from_tensor_slices((x_val, y_val)).batch(val_batch_size).shuffle(1000)
+  val_dataset = val_dataset.repeat()
     
-  valid_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(test_batch_size).shuffle(1000)
-  valid_dataset = valid_dataset.repeat()
+  test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(test_batch_size).shuffle(1000)
+  test_dataset = test_dataset.repeat()
 
-  def lr_schedule(epoch):
+  def lr_schedule(epoch):   #this is currently not being used
       """ Learning Rate Schedule. Learning rate is scheduled to be reduced 
       after 80, 120, 160, 180 epochs. Called automatically every epoch as 
       part of callbacks during training. """
@@ -62,8 +69,8 @@ def Classify():
   CHANNELS = 1
   NUM_OUTPUTS = 1
 
-  model = resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS);
-  model.compile(optimizer=Adam(learning_rate=0.01), loss='binary_crossentropy', metrics=['binary_accuracy'])
+  model = resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS);    #model chosen is resnet2
+  model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['binary_accuracy'], tf.keras.metrics.Recall()]) #very important line about model characteristics
   model.summary()
 
   # Prepare callbacks
@@ -74,37 +81,50 @@ def Classify():
   start = time.time();
   history = model.fit(train_dataset, 
           epochs=epochs, 
-          steps_per_epoch=200,
-          validation_data=valid_dataset,
-          validation_steps = 10)
+          steps_per_epoch=108,    #108 since training dataset is 864 aprox, 864/batchsize = 864/16 = 54, and this is usually x2 hence 108
+          validation_data=val_dataset,
+          validation_steps = 27)    #27 since validation dataset is 108 aprox, 108/batchsize = 108/8 = 13.5, and this is usually x2 hence 27
   
-  evaluation = model.evaluate(x_test, y_test, verbose=1)
+  evaluation = model.evaluate(x_test, y_test, verbose=1)    #after training and validation end (50 epochs), we finish with testing
   end = time.time()
 
   print('Classify Summary: Accuracy: %.2f Time Elapsed: %.2f seconds' % (evaluation[1], (end - start)) )
+  print('Classify Summary: Test Loss: %.2f Time Elapsed: %.2f seconds' % (evaluation[0], (end - start)) )
+  print('Classify Summary: Sensitivity: %.2f Time Elapsed: %.2f seconds' % (evaluation[2], (end - start)) )   #note sensitivity=recall
+  
+  #if more parameters are to be evaluated the evaluation summary should be brought to find how these are ordered
 
   # Plot Accuracy 
   plt.plot(history.history["binary_accuracy"])
   plt.plot(history.history["val_binary_accuracy"])
   plt.ylabel("Accuracy")
   plt.xlabel("Epochs")
-  plt.title('Classify Summary: Accuracy: %.2f Time Elapsed: %.2f seconds' % (evaluation[1], (end - start)))
-  plt.legend(["Train Accuracy", "Test Accuracy"], loc="upper left")
+  plt.title('Classify Summary: Test Accuracy: %.2f Time Elapsed: %.2f seconds' % (evaluation[1], (end - start)))
+  plt.legend(["Train Accuracy", "Validation Accuracy"], loc="upper left")
 
   import datetime
-  file_time = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
-  plt.savefig('results/tf2/classifier_' + file_time + '.png')
-  model.save('results/tf2/classifier_' + file_time + '.h5') 
+  file_time = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')  #get date today for filename
+  plt.savefig('results/tf2/classifier_' + file_time + '.png')   #save graph
+  model.save('results/tf2/classifier_' + file_time + '.h5')   #save model weights in h5 file
   plt.close()
 
   print(model.metrics_names)
+  
+  # Plot Loss
   plt.plot(history.history["loss"])
   plt.plot(history.history["val_loss"])
   plt.ylabel("Loss")
   plt.xlabel("Epochs")
-  plt.title("Classify Summary: Loss: %.2f Time Elapsed: %.2f seconds" % (evaluation[0], (end - start)))
-  plt.legend(["Train Loss", "Test Loss"], loc="upper left")
-
-  file_time2 = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
-  plt.savefig('results/tf2/loss_' + file_time2 + '.png')
-  model.save('results/tf2/loss_' + file_time2 + '.h5') 
+  plt.title("Classify Summary: Test Loss: %.2f Time Elapsed: %.2f seconds" % (evaluation[0], (end - start)))
+  plt.legend(["Train Loss", "Validation Loss"], loc="upper left")
+  plt.savefig('results/tf2/loss_' + file_time + '.png')   #save loss graph
+  plt.close()
+  
+  # Plot Sensitivity
+  plt.plot(history.history["recall"])
+  plt.plot(history.history["val_recall"])
+  plt.ylabel("Sensitivity")
+  plt.xlabel("Epochs")
+  plt.title("Classify Summary: Test Sensitivity: %.2f Time Elapsed: %.2f seconds" % (evaluation[2], (end - start)))
+  plt.legend(["Train Sensitivity", "Validation Sensitivity"], loc="upper left")
+  plt.savefig('results/tf2/sensitivity_' + file_time + '.png')  #save graph
