@@ -2,6 +2,8 @@
 '''
 Basic Keras Code for a convolutional neural network
 '''
+
+#this is the classifier used if using alpha or calpha as the diagnostic parameter
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -12,10 +14,10 @@ from tensorflow.keras import regularizers
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.callbacks import LearningRateScheduler, ReduceLROnPlateau
 import matplotlib.pyplot as plt
-from ..data_loader2 import DataGenerator2
+from ..data_loader2 import DataGenerator2   #for this classifier we import only DataGenerator2 since we are using the alpha angle
 from .model import conv0, conv1, conv2, conv3, resnet, resnet2
 
-def Classify2():
+def Classify2():    #again specifiy the function to be 2 and hence refere to the alpha angle
   
   # Training Parameters
   epochs = 50
@@ -23,8 +25,8 @@ def Classify2():
   test_batch_size = 8
   val_batch_size = 8
 
-  # Import Dataset
-  data = DataGenerator2(width=256, height=256)
+  # Import Dataset, in this case the y label is the alpha angle
+  data = DataGenerator2(width=256, height=256)  #in this case we have specified the width and height to be 256, larger than the standard in the dataloader file
   x_train = data.x_train
   y_train = data.y_train
   x_val = data.x_val
@@ -44,7 +46,7 @@ def Classify2():
   test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(test_batch_size).shuffle(1000)
   test_dataset = test_dataset.repeat()
 
-  def lr_schedule(epoch):
+  def lr_schedule(epoch):   #this is currently not being used
       """ Learning Rate Schedule. Learning rate is scheduled to be reduced 
       after 80, 120, 160, 180 epochs. Called automatically every epoch as 
       part of callbacks during training. """
@@ -67,8 +69,8 @@ def Classify2():
   CHANNELS = 1
   NUM_OUTPUTS = 1
 
-  model = resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS);
-  model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['binary_accuracy', tf.keras.metrics.Recall()])
+  model = resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS);  #model chosen is resnet2
+  model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['binary_accuracy', tf.keras.metrics.Recall()])  #very important line about model characteristics
   model.summary()
 
   # Prepare callbacks
