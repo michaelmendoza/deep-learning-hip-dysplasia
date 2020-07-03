@@ -25,17 +25,17 @@ class Stats:
 class DataGenerator:
 
     def __init__(self, 
-        imagedir = 'hip_images_marta/', #'data2/cropped/', #'data/images/', 
-        anglecsv =  'hip_images_marta/final_data.csv', #'./data2/final_data.csv', #'./data/FinalLinkedData.csv', 
-        width = 128, #196, 
-        height = 128, #196, 
-        ratio1 = 0.8, 
-        ratio2 = 0.1,
-        useBinaryClassify = True, 
-        binaryThreshold = "Discharged", #60.0,
-        useNormalization = True,       #useNormalization = False
+        imagedir = 'hip_images_marta/', #insert here the directory where you store the hip images
+        anglecsv =  'hip_images_marta/final_data.csv', #insert here the file location of the csv with the patient data
+        width = 128, #insert here the image width
+        height = 128, #insert here the image height
+        ratio1 = 0.8, #this is the percentage for training, in this case 80%
+        ratio2 = 0.1,   #this is the percentage for validation, 10% and hence the remaining 10% for testing
+        useBinaryClassify = True,   #we will be using a binary classification, 1 or 0
+        binaryThreshold = "Discharged", #in this case, either discharged which means healthy or something else which means diseased
+        useNormalization = True,
         useWhitening = True, 
-        useRandomOrder = False):        #useRandomOrder=True):
+        useRandomOrder = False):        #useRandomOrder=True): to randomize the order of data
         
         self.imagedir = imagedir
         self.anglecsv = anglecsv
@@ -54,11 +54,11 @@ class DataGenerator:
         self.useRandomOrder = useRandomOrder
 
         print("Loading and formating image data ....")
-        self.generate()
+        self.generate()     #first function that leads onto the rest, go down to find it
         print("Loading and formating image data: Complete")
         print("Data size: Input Data", self.x_train.shape, " Truth Data:", self.y_train.shape);
 
-    def loadOldCSV(self):
+    def loadOldCSV(self):   #this was the loading process for the old csv file Michael had
         angle_dict = {}
         with open(self.anglecsv) as csvfile:
             reader = csv.DictReader(csvfile)
@@ -79,37 +79,32 @@ class DataGenerator:
                     angle_dict[key] = [alpha, beta]
         return angle_dict 
 
-    def loadMartaCSV(self):
-        outcome_dict = {} #angle_dict = {}
+    def loadMartaCSV(self):     #this is the loading process I used
+        outcome_dict = {} 
         with open(self.anglecsv) as csvfile:
             reader = csv.DictReader(csvfile)
             for row in reader:
-                
                 # Get key and format key
-                key = row['Match 1'] 
-                outcome_dict[key] = row['Outcome']
-
-                #if row['C Alpha'] != '' and row['C Alpha'] != 'cm' and row['C Alpha'] != 'X' and row['C Alpha'] != 'no' and row['C Alpha'] != 'No ' and row['C Beta'] != 'cm' and row['C Beta'] != 'X':
-                    #alpha = float(row['C Alpha'])
-                    #beta = float(row['C Beta'])
-                    #angle_dict[key] = [alpha, beta]
-        return outcome_dict #angle_dict 
+                key = row['Match 1']    #Match 1 contains the image name of the nonannotated images
+                outcome_dict[key] = row['Outcome']  #for each of the images get the corresponding outcome
+                
+        return outcome_dict 
 
     def formatAngleData(self):
         files = os.listdir(self.imagedir)
 
         files_with_angle = []
-        outcome = [] #angle_data = []
+        outcome = [] 
         for f in files:
-            if f in self.outcome_dict:  #self.angle_dict
-                outcome.append(self.outcome_dict[f]) #angle_data.append(self.angle_dict[f])
-                files_with_angle.append(f)
+            if f in self.outcome_dict:  #this is to ensure all file names in Match 1 are also present in the image directory chosen
+                outcome.append(self.outcome_dict[f]) #if this is the case outcome will store the otucome for that file
+                files_with_angle.append(f)  #and the file name will also be stored
 
-        return outcome, files_with_angle #np.array(angle_data), files_with_angle
+        return outcome, files_with_angle 
      
     def cropimages(self, img):
 
-        # Do cropping 
+        #Have done it previously so not necessary anymore
 
         return img
 
@@ -132,20 +127,17 @@ class DataGenerator:
         return imgs
 
     def generate(self):
-        self.outcome_dict = self.loadMartaCSV() #self.angle_dict = self.loadMartaCSV()
-        self.outcome, self.files = self.formatAngleData()  #self.angle_data, self.files = self.formatAngleData() 
+        self.outcome_dict = self.loadMartaCSV() #run the function to get the outcome
+        self.outcome, self.files = self.formatAngleData()  #run the function to get the files and outcome which are present 
         
         # Load image data
         self.image_data = self.loadImageData()
 
-        # Grab angle data:
-        #self.angle_data = np.reshape(self.angle_data[:,0], (-1, 1))
-
         # Randomize data order
         if self.useRandomOrder:
-            indices = [_ for _ in range(len(self.outcome))] #indices = [_ for _ in range(len(self.angle_data))]
+            indices = [_ for _ in range(len(self.outcome))] 
             self.image_data = self.image_data[indices]
-            self.outcome = self.outcome[indices] #self.angle_data = self.angle_data[indices]
+            self.outcome = self.outcome[indices] 
 
         # Data preprocessing
         if self.useNormalization:
@@ -162,14 +154,14 @@ class DataGenerator:
             #if self.useWhitening:
                 #self.angle_data, self.ang_mean, self.ang_std = self.whiten(self.angle_data)
 
-        # Split data into test/training sets 
-        index1 = int(self.ratio1 * len(self.image_data)) # Split index
-        self.x_train = self.image_data[0:index1, :]
+        # Split image data into test/training sets 
+        index1 = int(self.ratio1 * len(self.image_data)) # Split index, this is 80% training
+        self.x_train = self.image_data[0:index1, :]     #this is 80% training
         index2 = int((self.ratio1+self.ratio2) * len(self.image_data))
-        self.x_val = self.image_data[index1:index2, :] 
-        self.x_test = self.image_data[index2:, :] 
+        self.x_val = self.image_data[index1:index2, :]  #then 10% validation
+        self.x_test = self.image_data[index2:, :]   #and 10% testing
 
-        if self.useBinaryClassify:
+        if self.useBinaryClassify:  #Split the outcome data
             self.y_train = self.outcome[0:index1]
             self.y_val = self.outcome[index1:index2]
             self.y_test = self.outcome[index2:]
@@ -182,10 +174,9 @@ class DataGenerator:
 
     def threshold(self, data): 
         threshold = np.zeros(len(data))
-        #threshold = (data > self.binaryThreshold) * 1
         for i in range(len(data)):
-            threshold[i]= (data[i]!=self.binaryThreshold)*1
-        # OneHot Encoding #onehot = np.concatenate( (1 - threshold, threshold), axis = 1)  # OneHot Encoding
+            threshold[i]= (data[i]!=self.binaryThreshold)*1     #if the outcome is equal to discharge then we have a 0/healthy, if not we have a 1/diseased
+        # OneHot Encoding #onehot = np.concatenate( (1 - threshold, threshold), axis = 1)  # OneHot Encoding this would be for multiple classes
         return threshold #return onehot
 
     def next_batch(self, batch_size):
