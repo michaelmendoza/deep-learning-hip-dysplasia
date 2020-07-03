@@ -70,7 +70,7 @@ def Classify():
   NUM_OUTPUTS = 1
 
   model = resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS);    #model chosen is resnet2
-  model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['binary_accuracy'], tf.keras.metrics.Recall()]) #very important line about model characteristics
+  model.compile(optimizer=Adam(learning_rate=0.001), loss='binary_crossentropy', metrics=['binary_accuracy', tf.keras.metrics.Recall()]) #very important line about model characteristics
   model.summary()
 
   # Prepare callbacks
