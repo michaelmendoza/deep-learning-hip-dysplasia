@@ -147,7 +147,7 @@ class DataGenerator:
             self.image_data, self.img_mean, self.img_std = self.whiten(self.image_data)
 
         if self.useBinaryClassify:
-            self.outcome = self.threshold(self.outcome) #self.angle_data = self.threshold(self.angle_data)
+            self.outcome = self.threshold(self.outcome) #refer to the threshold function to extract the outcome data as 1 or 0s
         #else:
             #if self.useNormalization:
                 #self.angle_data, self.ang_min, self.ang_max = self.normalize(self.angle_data)
