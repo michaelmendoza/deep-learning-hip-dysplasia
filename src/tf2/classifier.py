@@ -19,7 +19,7 @@ from .model import conv0, conv1, conv2, conv3, resnet, resnet2
 def Classify():
   
   # Training Parameters
-  epochs = 100
+  epochs = 50
   batch_size = 16 
   test_batch_size = 8
 
@@ -93,8 +93,25 @@ def Classify():
 
   import datetime
   file_time = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
+
   plt.savefig('results/tf2/classifier_' + file_time + '.png')
   model.save('results/tf2/classifier_' + file_time + '.h5') 
+
+  return model, history 
+
+def Plot(history): 
+  # Plot Accuracy 
+  plt.plot(history.history["categorical_accuracy"])
+  plt.plot(history.history["val_categorical_accuracy"])
+  plt.ylabel("Accuracy")
+  plt.xlabel("Epochs")
+  plt.title('Classify Summary: Accuracy: %.2f Time Elapsed: %.2f seconds' % (evaluation[1], (end - start)))
+  plt.legend(["Train Accuracy", "Test Accuracy"], loc="upper left")
+
+  import datetime
+  file_time = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
+
+  plt.savefig('results/tf2/classifier_' + file_time + '.png')
 
 def Load(filename):
 
