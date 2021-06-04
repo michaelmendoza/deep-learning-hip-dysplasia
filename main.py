@@ -3,7 +3,7 @@ from src.tf.estimator import Estimator
 from src.tf.classifier import Classifier
 from src.tf2.classifier import Classify
 from src.tf2.classifier import Load
-from src.v3.classifier import Train
+from src.v4.classifier import Train
 
 if __name__ == '__main__':
 

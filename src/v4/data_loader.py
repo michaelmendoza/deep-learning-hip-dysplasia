@@ -21,6 +21,7 @@ class DataGenerator:
                 csvfilename = '../../../data/hip_images_marta/final_data.csv',
                 width = 256,
                 height = 256,
+                channels = 1,
                 ratio = 0.8, # training size / data size ratio,
                 batch_size = 128,
                 useBinaryClassify = True,
@@ -31,6 +32,7 @@ class DataGenerator:
         self.index = 0
         self.WIDTH = width
         self.HEIGHT = height
+        self.CHANNELS = channels
         self.ratio = ratio
         self.batch_size = batch_size
 
@@ -58,17 +60,17 @@ class DataGenerator:
 
         train_dataset = tf.data.Dataset.from_tensor_slices((x_train, y_train)).batch(self.batch_size).shuffle(1000)
         train_dataset = train_dataset.map(lambda x, y: (tf.image.resize_with_pad(x, self.HEIGHT, self.WIDTH), y))  # upscale to prevent overfitting
-        #train_dataset = train_dataset.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y))
+        train_dataset = train_dataset.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y)) if self.CHANNELS == 3 else train_dataset # Add Channels if needed
         train_dataset = train_dataset.repeat()
 
         valid_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(self.batch_size).shuffle(1000)
         valid_dataset = valid_dataset.map(lambda x, y: (tf.image.resize_with_pad(x, self.HEIGHT, self.WIDTH), y))  # upscale to prevent overfitting
-        #valid_dataset = valid_dataset.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y))
+        valid_dataset = valid_dataset.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y)) if self.CHANNELS == 3 else train_dataset # Add Channels if needed
         valid_dataset = valid_dataset.repeat()
 
         test_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(self.batch_size)
         test_dataset = test_dataset.map(lambda x, y: (tf.image.resize_with_pad(x, self.HEIGHT, self.WIDTH), y))
-        #test_dataset = test_dataset.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y))
+        test_dataset = test_dataset.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y)) if self.CHANNELS == 3 else train_dataset # Add Channels if needed
         
         return train_dataset, valid_dataset, test_dataset
 
@@ -108,16 +110,16 @@ class DataGenerator:
     def loadImages(self, files):
         for f in tqdm(files):
             img = io.imread(self.imagedir + f)
-            #img = np.reshape(img, (img.shape[0], img.shape[1], 1))
+            img = np.reshape(img, (img.shape[0], img.shape[1], 1))
             
             if f == files[0]:
                 imgs = img[None,:]
             else:
                 imgs = np.concatenate((imgs, img[None,:]), axis=0)
         
-        print(imgs.shape)
-        imgs = imgs[:, :, :, None] * np.ones(3, dtype=int)[None, None, None, :]
-        print(imgs.shape)
+        #print(imgs.shape)
+        #imgs = imgs[:, :, :, None] * np.ones(3, dtype=int)[None, None, None, :]
+        #print(imgs.shape)
 
         return imgs
 

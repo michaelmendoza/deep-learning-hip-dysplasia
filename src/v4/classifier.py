@@ -21,7 +21,7 @@ batch_size = 16
 # Network Parameters
 WIDTH = 256
 HEIGHT = 256
-CHANNELS = 1
+CHANNELS = 3 # Note: 3 channels need for transfer learning models 
 NUM_OUTPUTS = 2
 
 def Train():
@@ -29,7 +29,7 @@ def Train():
     csvfilename = '../data/hip_images_marta/final_data.csv'
 
     # Generate datasets 
-    data = DataGenerator(width=WIDTH, height=HEIGHT, imagedir=imagedir, csvfilename=csvfilename)
+    data = DataGenerator(width=WIDTH, height=HEIGHT, channels=CHANNELS, imagedir=imagedir, csvfilename=csvfilename)
     dataset = (data.train_dataset, data.valid_dataset, data.test_dataset)
     TrainAll(dataset)
 
@@ -61,7 +61,7 @@ def TrainOne(model_name, dataset):
     from .models import transfer_learned_model 
     model = transfer_learned_model(model_name, HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS)
     model.compile(optimizer=keras.optimizers.Adam(),
-                loss='sparse_categorical_crossentropy',
+                loss='categorical_crossentropy',
                 metrics=['acc'])
     model.summary()
     

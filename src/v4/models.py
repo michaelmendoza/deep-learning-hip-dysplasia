@@ -67,7 +67,7 @@ def transfer_learned_model(model_name, HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS):
 
     base_model = Network(weights = 'imagenet', 
                         include_top = False, 
-                        input_shape = (HEIGHT, WIDTH, 3),
+                        input_shape = (HEIGHT, WIDTH, CHANNELS),
                         pooling='max')
 
     for layer in base_model.layers:
