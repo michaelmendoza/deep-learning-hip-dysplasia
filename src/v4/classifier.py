@@ -15,13 +15,15 @@ import matplotlib.pyplot as plt
 from .data_loader import DataGenerator
 
 # Training Parameters
-epochs = 50
-batch_size = 16 
+epochs = 400
+batch_size = 128 #16
+# 816 / 216
 
 # Network Parameters
+useTransferLearning = False
 WIDTH = 256
 HEIGHT = 256
-CHANNELS = 3 # Note: 3 channels need for transfer learning models 
+CHANNELS = 3 if useTransferLearning else 1 # Note: 3 channels need for transfer learning models 
 NUM_OUTPUTS = 2
 
 def Train():
@@ -29,9 +31,62 @@ def Train():
     csvfilename = '../data/hip_images_marta/final_data.csv'
 
     # Generate datasets 
-    data = DataGenerator(width=WIDTH, height=HEIGHT, channels=CHANNELS, imagedir=imagedir, csvfilename=csvfilename)
+    data = DataGenerator(width=WIDTH, height=HEIGHT, channels=CHANNELS, imagedir=imagedir, csvfilename=csvfilename, batch_size=batch_size)
+    print('Train Size: ' + str(data.train_size) + ' Test Size: ' + str(data.test_size))
     dataset = (data.train_dataset, data.valid_dataset, data.test_dataset)
-    TrainAll(dataset)
+    if(useTransferLearning):
+        TrainAll(dataset)
+    else:
+        TrainResNetAll(dataset)
+
+def TrainResNetAll(dataset):
+    for _ in [0]:
+        print("Running ... ResNet2")
+
+        # Train model 
+        start = time.time()
+        model, history, metrics = TrainResNet(dataset)
+        end = time.time()
+
+        # Plot and Output results
+        summary = 'Loss: %.6f, Accuracy: %.6f, Time: %.2fs' % (metrics[0], metrics[1], (end - start))
+        print('ResNet: ' + summary)
+        plot([history], 'ResNet', summary)
+
+        # Save metric history 
+        metrics = { 'loss': metrics[0], 'acc': metrics[1], 'time': (end - start) }
+        load_and_save('ResNet', history, metrics)
+
+        # Save model
+        import datetime
+        file_time = datetime.datetime.today().strftime('_%Y-%m-%d__%I-%M')
+        model.save('v4_resnet50_keras_' + file_time + '.h5', save_format='tf')
+
+def TrainResNet(dataset):
+    (train_dataset, valid_dataset, test_dataset) = dataset
+
+    earlyStopping = keras.callbacks.EarlyStopping(monitor='val_acc', verbose=1, patience=50)
+
+    from .models import resnet2, resnet50_keras 
+    model = resnet50_keras(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS)
+    model.compile(optimizer=keras.optimizers.Adam(),
+                loss='categorical_crossentropy',
+                metrics=['acc'])
+    model.summary()
+    
+    # Train and Evaluate model
+    training_steps = round(816 / batch_size) #16)
+    validation_steps = round(216 / batch_size)
+    history = model.fit(train_dataset, epochs=epochs, steps_per_epoch=training_steps,
+            validation_data=valid_dataset,
+            validation_steps=validation_steps,
+            callbacks=[earlyStopping])
+    
+    # Evaluate Test Data 
+    steps = round(216 / (batch_size))
+    loss_and_metrics = model.evaluate(test_dataset, batch_size=batch_size, steps=steps)
+
+    return model, history, loss_and_metrics
 
 def TrainAll(dataset):
     from .models import get_model_names

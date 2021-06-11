@@ -23,7 +23,7 @@ class DataGenerator:
                 height = 256,
                 channels = 1,
                 ratio = 0.8, # training size / data size ratio,
-                batch_size = 128,
+                batch_size = 16, #128,
                 useBinaryClassify = True,
                 binaryThreshold = 60):
 
@@ -46,7 +46,7 @@ class DataGenerator:
     def generate(self):
         angles, files = self.loadCSV()
         images = self.loadImages(files)
-    
+        
         # Generate classifcation data if needed 
         labels = angles
         if(self.useBinaryClassify):
@@ -55,6 +55,8 @@ class DataGenerator:
         images, mean, std = self.StandardScaler(images) 
 
         (x_train, y_train), (x_test, y_test) = self.split_data(images, labels)
+        self.train_size = x_train.shape[0]
+        self.test_size = x_test.shape[0]
         print("Training data size: Input Data", x_train.shape, " Truth Data:", y_train.shape)
         print("Test data size: Input Data", x_test.shape, " Truth Data:", y_test.shape)
 
@@ -63,7 +65,7 @@ class DataGenerator:
         train_dataset = train_dataset.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y)) if self.CHANNELS == 3 else train_dataset # Add Channels if needed
         train_dataset = train_dataset.repeat()
 
-        valid_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(self.batch_size).shuffle(1000)
+        valid_dataset = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(self.batch_size)
         valid_dataset = valid_dataset.map(lambda x, y: (tf.image.resize_with_pad(x, self.HEIGHT, self.WIDTH), y))  # upscale to prevent overfitting
         valid_dataset = valid_dataset.map(lambda x, y: (tf.image.grayscale_to_rgb(x), y)) if self.CHANNELS == 3 else train_dataset # Add Channels if needed
         valid_dataset = valid_dataset.repeat()

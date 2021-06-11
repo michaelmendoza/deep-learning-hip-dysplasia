@@ -45,6 +45,38 @@ def resnet2(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS):
     outputs = layers.Dense(NUM_OUTPUTS, activation='softmax')(x)
 
     model = keras.Model(inputs, outputs)
+
+    layer_count = sum([model.layers[i].name.count('conv') for i in range(len(model.layers))])
+    print("Number of conv layers in the model: ", layer_count)
+    return model
+
+def resnet50_keras(HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS):
+    Network = tf.keras.applications.ResNet50V2
+    base_model = Network(weights = None, 
+                        include_top = False, 
+                        input_shape = (HEIGHT, WIDTH, CHANNELS),
+                        pooling='max')
+    
+    for layer in base_model.layers:
+        layer.trainable = True
+    x = layers.Flatten()(base_model.output)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dense(256, activation='relu')(x)
+    x = layers.Dropout(0.2)(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dense(128, activation='relu')(x)
+    x = layers.Dropout(0.2)(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dense(64, activation='relu')(x)
+    x = layers.Dropout(0.2)(x)
+    x = layers.BatchNormalization()(x)
+    x = layers.Dense(NUM_OUTPUTS, activation='softmax')(x)
+    model = keras.Model(inputs = base_model.input, outputs = x)
+    model.base_model = base_model # Save ref to base_model 
+        
+    layer_count = sum([model.layers[i].name.count('conv2d') for i in range(len(model.layers))])
+    print("Number of conv2d layers in the model: ", layer_count)
+    print("Number of layers in the base model: ", len(base_model.layers))
     return model
 
 def get_model_names():
@@ -93,8 +125,6 @@ def transfer_learned_model(model_name, HEIGHT, WIDTH, CHANNELS, NUM_OUTPUTS):
 def fine_tune_model(model_name, model):
     
     MODELS = {
-        "VGG16": 6,
-        "VGG19": 6,
         "ResNet50V2": 25,
         "ResNet152V2": 50,
         "Xception":  25, 
@@ -119,5 +149,5 @@ def fine_tune_model(model_name, model):
         layer.trainable =  False
 
     model.compile(optimizer=keras.optimizers.SGD(lr=0.0001, momentum=0.9),   
-                 loss='sparse_categorical_crossentropy', metrics=['acc']) 
+                 loss='categorical_crossentropy', metrics=['acc']) 
     return model 
