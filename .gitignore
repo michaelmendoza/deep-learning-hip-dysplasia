@@ -3,10 +3,10 @@
 .ipynb_checkpoints/
 __pycache__/
 .DS_Store
+*.h5
 
 data/
 data2/
-results/
 checkpoints/
 hip_images_marta/
 orginal_marta_clean/
