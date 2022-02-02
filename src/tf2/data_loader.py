@@ -23,10 +23,10 @@ class Stats:
         self.std = std
 
 class DataGenerator:
-
+    
     def __init__(self, 
-        imagedir = '../data/hip_images_marta/', #'data2/cropped/', #'data/images/', 
-        anglecsv =  '../data/hip_images_marta/final_data.csv', #'./data2/final_data.csv', #'./data/FinalLinkedData.csv', 
+        imagedir = '../../data/hip_images_marta/', #'data2/cropped/', #'data/images/', 
+        anglecsv =  '../../data/hip_images_marta/final_data.csv', #'./data2/final_data.csv', #'./data/FinalLinkedData.csv', 
         width = 128, #196, 
         height = 128, #196, 
         ratio = 0.8, 
